@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import uchicago.src.reflector.RangePropertyDescriptor;
 import uchicago.src.sim.analysis.BinDataSource;
 import uchicago.src.sim.analysis.DataSource;
-import uchicago.src.sim.analysis.OpenHistogram;
-import uchicago.src.sim.analysis.OpenSequenceGraph;
 import uchicago.src.sim.analysis.Sequence;
 import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.Schedule;
@@ -122,7 +120,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    registerDisplaySurface("Rabbit Grass Simulation Model Window 1", displaySurf);
 //	    this.registerMediaProducer("Plot", amountOfMoneyInSpace);
 	    
+	 
+	    
 	  //creates a slider which has to be an int.
+	    
+	   
 	    RangePropertyDescriptor pdBirthThreshold = new RangePropertyDescriptor("BirthThreshold", 0, 100, 5);
 	    RangePropertyDescriptor pdGrowthRate = new RangePropertyDescriptor("GrassGrowthRate", 0, 1000, 200);
 	    RangePropertyDescriptor pdNumAgents = new RangePropertyDescriptor("NumAgents", 0, 500, 50);
@@ -130,6 +132,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    descriptors.put("BirthThreshold", pdBirthThreshold);
 	    descriptors.put("GrassGrowthRate", pdGrowthRate);
 	    descriptors.put("NumAgents", pdNumAgents);
+	    
+	    getModelManipulator();
 	  }
 
 	  /**
@@ -227,7 +231,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    ColorMap map = new ColorMap();
 
 	    for(int i = 1; i<16; i++){
-	      map.mapColor(i, new Color((int)(i * 8 + 127), 0, 0));
+	      map.mapColor(i, Color.green);
 	    }
 	    map.mapColor(0, Color.white);
 
@@ -237,7 +241,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    Object2DDisplay displayAgents = new Object2DDisplay(rgSpace.getCurrentAgentSpace());
 	    displayAgents.setObjectList(agentList);
 
-	    displaySurf.addDisplayableProbeable(displayMoney, "Money");
+	    displaySurf.addDisplayableProbeable(displayMoney, "Grass");
 	    displaySurf.addDisplayableProbeable(displayAgents, "Agents");
 
 //	    amountOfMoneyInSpace.addSequence("Money In Space", new grassInSpace());
