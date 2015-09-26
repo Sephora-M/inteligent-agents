@@ -22,8 +22,9 @@ import uchicago.src.sim.util.SimUtilities;
  * simulation.  This is the first class which needs to be setup in
  * order to run Repast simulation. It manages the entire RePast
  * environment and the simulation.
- *
- * @author 
+ * 
+ * Note that this class was highly inspired by the Agent-Based Modelling tutorial
+ * by John T. Murphy from the University of Arizona
  */
 
 
@@ -33,28 +34,32 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	  private static final int NUMAGENTS = 100;
 	  private static final int WORLDXSIZE = 40;
 	  private static final int WORLDYSIZE = 40;
-	  private static final int GRASS_GROWTH_RATE = 1000;
-	  private static final int AGENT_MIN_LIFESPAN = 30;
-	  private static final int AGENT_MAX_LIFESPAN = 50;
+	  private static final int GRASS_GROWTH_RATE = 100;
 	  private static final int ENERGY_LEVEL_TO_REPRODUCE = 50;
+	  private static final int INITIAL_ENERGY_LEVE= 10;
+	  private static final int MOVE_ENERGY_LOSS= 1;
+	  private static final int REPRODUCTION_ENERGY_LOSS = 10;
+	  private static final int ENERGY_GAIN = 2;
 
 	  private int numAgents = NUMAGENTS;
 	  private int worldXSize = WORLDXSIZE;
 	  private int worldYSize = WORLDYSIZE;
 	  private int growthRate = GRASS_GROWTH_RATE;
-	  private int agentMinLifespan = AGENT_MIN_LIFESPAN;
-	  private int agentMaxLifespan = AGENT_MAX_LIFESPAN;
 	  private int reproductionEnergy = ENERGY_LEVEL_TO_REPRODUCE;
-
+	  private int initEnergy = INITIAL_ENERGY_LEVE;
+	  private int moveLoss = MOVE_ENERGY_LOSS;
+	  private int reproductionLoss = REPRODUCTION_ENERGY_LOSS;
+	  private int energyGain = ENERGY_GAIN;
 	  
 
-	private Schedule schedule;
+	  private Schedule schedule;
 
 	  private RabbitsGrassSimulationSpace rgSpace;
 
 	  private ArrayList agentList;
 
 	  private DisplaySurface displaySurf;
+	
 
 //	  private OpenSequenceGraph amountOfMoneyInSpace;
 //	  private OpenHistogram agentWealthDistribution;
@@ -70,7 +75,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    }
 	  }
 
-	  class agentMoney implements BinDataSource{
+	  class agentEnergy implements BinDataSource{
 	    public double getBinValue(Object o) {
 	      RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)o;
 	      return (double)rga.getEnergy();
@@ -157,7 +162,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	  public void buildModel(){
 	    System.out.println("Running BuildModel");
 	    rgSpace = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
-	    rgSpace.growGrass(growthRate);
+	    rgSpace.growGrass(growthRate, energyGain);
 
 	    for(int i = 0; i < numAgents; i++){
 	      addNewAgent();
@@ -182,15 +187,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	          RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
 	          rga.step();
 	        }
-//	        System.out.println("before reap: "+agentList.size());
 	        reapDeadAgents();
-//	        System.out.println("after reap: "+agentList.size());
 	        reproduceAgents();
-//	        System.out.println("before reprod: "+agentList.size());
-//	        for(int i =0; i < deadAgents; i++){
-//	          addNewAgent();
-//	        }
-	        rgSpace.growGrass(growthRate);
+	        rgSpace.growGrass(growthRate, energyGain); // grow grass at each time steps according to the growth rate
 
 	        displaySurf.updateDisplay();       }
 	    }
@@ -233,7 +232,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    for(int i = 1; i<16; i++){
 	      map.mapColor(i, Color.green);
 	    }
-	    map.mapColor(0, Color.white);
+	    map.mapColor(0, Color.darkGray);
 
 	    Value2DDisplay displayMoney = 
 	        new Value2DDisplay(rgSpace.getCurrentGrassSpace(), map);
@@ -253,7 +252,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	   * Add a new agent to this model's agent list and agent space
 	   */
 	  private void addNewAgent(){
-	    RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(agentMinLifespan, agentMaxLifespan);
+	    RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(initEnergy, moveLoss);
 	    agentList.add(a);
 	    rgSpace.addAgent(a);
 	  }
@@ -266,9 +265,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    int count = 0;
 	    for(int i = (agentList.size() - 1); i >= 0 ; i--){
 	      RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
-	      if(rga.getStepsToLive() < 1){
+	      if(rga.getEnergy() < 1){
 	        rgSpace.removeRabbitAt(rga.getX(), rga.getY());
-//	        rgSpace.growGrass(rga.getEnergy()); // No spreading of energy here!
 	        agentList.remove(i);
 	        count++;
 	      }
@@ -277,16 +275,17 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	  }
 	  
 	  /**
-	   * Make all agents which have enough energy reproduce
+	   * Make agents which have enough energy reproduce
 	   * @return a count of the agents that reproduced
 	   */
 	  private int reproduceAgents(){
 	    int count = 0;
 	    for(int i = (agentList.size() - 1); i >= 0 ; i--){
 	      RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
-	      if(rga.getEnergy() > reproductionEnergy){
-	        addNewAgent();
-	        count++;
+	      if(rga.getEnergy() >= reproductionEnergy){
+	    	  rga.setEnergy(rga.getEnergy()-reproductionLoss);
+	    	  addNewAgent();
+	    	  count++;
 	      }
 	    }
 	    return count;
@@ -300,7 +299,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	    int livingAgents = 0;
 	    for(int i = 0; i < agentList.size(); i++){
 	      RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
-	      if(rga.getStepsToLive() > 0) livingAgents++;
+	      if(rga.getEnergy() > 0) livingAgents++;
 	    }
 	    System.out.println("Number of living agents is: " + livingAgents);
 
@@ -323,7 +322,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	   * that can be modified by the RePast user interface
 	   */
 	  public String[] getInitParam(){
-//	    String[] initParams = { "NumAgents", "WorldXSize", "WorldYSize", "GrassGrowthRate", "AgentMinLifespan", "AgentMaxLifeSpan", "BirthThreshold"};
 		    String[] initParams = { "NumAgents","GrassGrowthRate","BirthThreshold"};
 	    return initParams;
 	  }
@@ -406,41 +404,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	   * initializing the simulation
 	   * @param i the new value for the total amount of money
 	   */
-	  public void setMoney(int i) {
+	  public void setGrowthRate(int i) {
 	    growthRate = i;
 	  }
 
-	  /**
-	   * Get the maximum value for an agent's lifespan
-	   * @return the maximum value for an agent's lifespan
-	   */
-	  public int getAgentMaxLifespan() {
-	    return agentMaxLifespan;
-	  }
-
-	  /**
-	   * Get the minimum value for an agent's lifespan
-	   * @return the minimum value for an agent's lifespan
-	   */
-	  public int getAgentMinLifespan() {
-	    return agentMinLifespan;
-	  }
-
-	  /**
-	   * Set the maximum value for an agent's lifespan
-	   * @param i the maximum value for an agent's lifespan
-	   */
-	  public void setAgentMaxLifespan(int i) {
-	    agentMaxLifespan = i;
-	  }
-
-	  /**
-	   * Set the minimum value for an agent's lifespan
-	   * @param i the minimum value for an agent's lifespan
-	   */
-	  public void setAgentMinLifespan(int i) {
-	    agentMinLifespan = i;
-	  }
 
 	  /**
 	   * Main method for this model object; this runs the model.

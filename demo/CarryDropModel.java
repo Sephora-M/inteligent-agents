@@ -75,7 +75,7 @@ public class CarryDropModel extends SimModelImpl {
 
   class agentMoney implements BinDataSource{
     public double getBinValue(Object o) {
-      RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)o;
+      CarryDropAgent cda = (CarryDropAgent)o;
       return (double)cda.getMoney();
     }
   }
@@ -151,7 +151,7 @@ public class CarryDropModel extends SimModelImpl {
       addNewAgent();
     }
     for(int i = 0; i < agentList.size(); i++){
-      RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)agentList.get(i);
+      CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
       cda.report();
     }
   }
@@ -167,7 +167,7 @@ public class CarryDropModel extends SimModelImpl {
       public void execute() {
         SimUtilities.shuffle(agentList);
         for(int i =0; i < agentList.size(); i++){
-          RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)agentList.get(i);
+          CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
           cda.step();
         }
 
@@ -237,7 +237,7 @@ public class CarryDropModel extends SimModelImpl {
    * Add a new agent to this model's agent list and agent space
    */
   private void addNewAgent(){
-    RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(agentMinLifespan, agentMaxLifespan);
+    CarryDropAgent a = new CarryDropAgent(agentMinLifespan, agentMaxLifespan);
     agentList.add(a);
     cdSpace.addAgent(a);
   }
@@ -250,7 +250,7 @@ public class CarryDropModel extends SimModelImpl {
   private int reapDeadAgents(){
     int count = 0;
     for(int i = (agentList.size() - 1); i >= 0 ; i--){
-      RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)agentList.get(i);
+      CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
       if(cda.getStepsToLive() < 1){
         cdSpace.removeAgentAt(cda.getX(), cda.getY());
         cdSpace.spreadMoney(cda.getMoney());
@@ -268,7 +268,7 @@ public class CarryDropModel extends SimModelImpl {
   private int countLivingAgents(){
     int livingAgents = 0;
     for(int i = 0; i < agentList.size(); i++){
-      RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)agentList.get(i);
+      CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
       if(cda.getStepsToLive() > 0) livingAgents++;
     }
     System.out.println("Number of living agents is: " + livingAgents);

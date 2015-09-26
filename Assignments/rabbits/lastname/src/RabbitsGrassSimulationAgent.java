@@ -11,7 +11,8 @@ import uchicago.src.sim.space.Object2DGrid;
 /**
  * Class that implements the simulation agent for the rabbits grass simulation.
 
- * @author
+ * Note that this class was highly inspired by the Agent-Based Modelling tutorial
+ * by John T. Murphy from the University of Arizona
  */
 
 public class RabbitsGrassSimulationAgent implements Drawable {
@@ -21,29 +22,28 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	  private int vX;
 	  private int vY;
 	  private int energy;
+	  private int moveLoss;
 	  
 
-	  private int stepsToLive;
 	  private static int IDNumber = 0;
 	  private int ID;
 	  private RabbitsGrassSimulationSpace rgSpace;
 	  
+	 
 	  
 	  /**
-	   * Constructor that takes the ranges of permissible life spans
-	   * @param minLifeSpan Shortest possible life span
-	   * @param maxLifeSpan Longest possible life span
+	   * Constructor that takes the initial energy level
+	   * @param initEnergy
 	   */
-	  public RabbitsGrassSimulationAgent(int minLifeSpan, int maxLifeSpan){
-	    x = -1;
-	    y = -1;
-	    energy = 0;
-	    setVxVy();
-	    stepsToLive = 
-	        (int)((Math.random() * (maxLifeSpan - minLifeSpan)) + minLifeSpan);
-	    IDNumber++;
-	    ID = IDNumber;
-	  }
+	  public RabbitsGrassSimulationAgent(int initEnergy, int moveLoss){
+		    x = -1;
+		    y = -1;
+		    energy = initEnergy;
+		    this.moveLoss = moveLoss;
+		    setVxVy();
+		    IDNumber++;
+		    ID = IDNumber;
+		  }
 	  
 	  /**
 	   * Draw this agent to the RePast graphics
@@ -116,16 +116,9 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	    	energy += rgSpace.eatGrassAt(x, y);
 	    }
 	    else{
-	      RabbitsGrassSimulationAgent rga = rgSpace.getRabbitAt(newX, newY);
-	      if (rga!= null){
-	        if(energy > 0){
-	          rga.receiveEnergy(1);
-	          energy--;
-	        }
-	      }
 	      setVxVy();
 	    }
-	    stepsToLive--;
+	    energy -= moveLoss ;
 	  }
 	  
 	  /**
@@ -154,9 +147,6 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	    return rgSpace.moveRabbitAt(x, y, newX, newY);
 	  }
 
-	  public void receiveEnergy(int amount){
-		    energy += amount;
-		  }
 	  /**
 	   * Prints a report on this agent's status variables to
 	   * the System output
@@ -166,9 +156,9 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	                       " at " + 
 	                       x + ", " + y + 
 	                       " has " + 
-	                       getEnergy() + " dollars" + 
-	                       " and " + 
-	                       getStepsToLive() + " steps to live.");
+	                       getEnergy() + " unit of energy." ); //+ 
+//	                       " and " + 
+//	                       getStepsToLive() + " steps to live.");
 	  }
 
 	  public String getID(){
@@ -179,12 +169,16 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 		return energy;
 	}
 	  
-	  /**
-	   * Get the number of steps this rabbit has remaining
-	   * in its 'stepsToLive' variable.
-	   * @return the number of steps until this rabbit dies
-	   */
-	  public int getStepsToLive(){
-	    return stepsToLive;
-	  }
+	  public void setEnergy(int newEnergy) {
+			this.energy = newEnergy;
+		}
+	  
+//	  /**
+//	   * Get the number of steps this rabbit has remaining
+//	   * in its 'stepsToLive' variable.
+//	   * @return the number of steps until this rabbit dies
+//	   */
+//	  public int getStepsToLive(){
+//	    return stepsToLive;
+//	  }
 }

@@ -81,10 +81,10 @@ private Object2DGrid agentSpace;
    * @param y Y coordinate of the desired cell
    * @return a pointer to the agent at X,Y, if any.
    */
-  public RabbitsGrassSimulationAgent getAgentAt(int x, int y){
-    RabbitsGrassSimulationAgent retVal = null;
+  public CarryDropAgent getAgentAt(int x, int y){
+    CarryDropAgent retVal = null;
     if(agentSpace.getObjectAt(x, y) != null){
-      retVal = (RabbitsGrassSimulationAgent)agentSpace.getObjectAt(x,y);
+      retVal = (CarryDropAgent)agentSpace.getObjectAt(x,y);
     }
     return retVal;
   }
@@ -127,7 +127,7 @@ private Object2DGrid agentSpace;
    * @return True if the agent was successfully placed,
    * false if not
    */
-  public boolean addAgent(RabbitsGrassSimulationAgent agent){
+  public boolean addAgent(CarryDropAgent agent){
     boolean retVal = false;
     int count = 0;
     int countLimit = 10 * agentSpace.getSizeX() * agentSpace.getSizeY();
@@ -183,7 +183,7 @@ private Object2DGrid agentSpace;
   public boolean moveAgentAt(int x, int y, int newX, int newY){
     boolean retVal = false;
     if(!IsCellOccupied(newX, newY)){
-      RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)agentSpace.getObjectAt(x, y);
+      CarryDropAgent cda = (CarryDropAgent)agentSpace.getObjectAt(x, y);
       removeAgentAt(x,y);
       cda.setXY(newX, newY);
       agentSpace.putObjectAt(newX, newY, cda);

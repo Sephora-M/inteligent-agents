@@ -5,7 +5,10 @@ import uchicago.src.sim.space.Object2DGrid;
 
 /**
  * Class that implements the simulation space of the rabbits grass simulation.
- * @author 
+ * 
+ * Note that this class was highly inspired by the Agent-Based Modelling tutorial
+ * by John T. Murphy from the University of Arizona
+ *  
  */
 
 public class RabbitsGrassSimulationSpace {
@@ -29,18 +32,15 @@ public class RabbitsGrassSimulationSpace {
 	   * the landscape
 	   * @param grass the (total) amount of grass to be distributed
 	   */
-	  public void growGrass(int grass){
-	    // Randomly place money in moneySpace
+	  public void growGrass(int grass, int energyGain){
+	   
 	    for(int i = 0; i < grass; i++){
 
-	      // Choose coordinates
 	      int x = (int)(Math.random()*(grassSpace.getSizeX()));
 	      int y = (int)(Math.random()*(grassSpace.getSizeY()));;
 
-	      // Get the value of the object at those coordinates
 	      int currentValue = getGrassAt(x, y);
-	      // Replace the Integer object with another one with the new value
-	      grassSpace.putObjectAt(x,y,new Integer(currentValue + 1));
+	      grassSpace.putObjectAt(x,y,new Integer(currentValue + energyGain));
 	    }
 	  }
 	  
