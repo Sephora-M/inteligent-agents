@@ -2,14 +2,17 @@ package Assignments.rabbits.lastname.src;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import uchicago.src.reflector.RangePropertyDescriptor;
 import uchicago.src.sim.analysis.BinDataSource;
 import uchicago.src.sim.analysis.DataSource;
+import uchicago.src.sim.analysis.OpenHistogram;
+import uchicago.src.sim.analysis.OpenSequenceGraph;
 import uchicago.src.sim.analysis.Sequence;
 import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.SimModelImpl;
-import uchicago.src.sim.event.SliderListener;
+//import uchicago.src.sim.event.SliderListener;
 import uchicago.src.sim.gui.ColorMap;
 import uchicago.src.sim.gui.DisplaySurface;
 import uchicago.src.sim.gui.Object2DDisplay;
@@ -31,11 +34,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private static final int NUMAGENTS = 100;
 	private static final int WORLDXSIZE = 40;
 	private static final int WORLDYSIZE = 40;
-	private static final int GRASS_GROWTH_RATE = 10;
-	private static final int ENERGY_LEVEL_TO_REPRODUCE = 50;
+	private static final int GRASS_GROWTH_RATE = 100;
+	private static final int ENERGY_LEVEL_TO_REPRODUCE = 15;
 	private static final int INITIAL_ENERGY_LEVE= 10;
 	private static final int MOVE_ENERGY_LOSS= 1;
-	private static final int REPRODUCTION_ENERGY_LOSS = 10;
+	private static final int REPRODUCTION_ENERGY_LOSS = (int) (ENERGY_LEVEL_TO_REPRODUCE/2);
 	private static final int ENERGY_GAIN = 2;
 
 	private int numAgents = NUMAGENTS;
@@ -57,8 +60,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private DisplaySurface displaySurf;
 
 
-	//	  private OpenSequenceGraph amountOfMoneyInSpace;
-	//	  private OpenHistogram agentWealthDistribution;
+		  private OpenSequenceGraph totalGrassInSpace;
+		  private OpenHistogram agentEnergyLevelDistribution;
 
 	class grassInSpace implements DataSource, Sequence {
 
@@ -68,6 +71,17 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 		public double getSValue() {
 			return (double)rgSpace.getTotalGrass();
+		}
+	}
+	
+	class agentsInSpace implements DataSource, Sequence {
+
+		public Object execute() {
+			return new Double(getSValue());
+		}
+
+		public double getSValue() {
+			return (double)agentList.size();
 		}
 	}
 
@@ -91,7 +105,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	 * prepare for a new run.
 	 */
 	public void setup(){
-		System.out.println("Running setup");
+		//		System.out.println("Running setup");
 		rgSpace = null;
 		agentList = new ArrayList<RabbitsGrassSimulationAgent>();
 		schedule = new Schedule(1);
@@ -102,44 +116,68 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		}
 		displaySurf = null;
 
-		//	    if (amountOfMoneyInSpace != null){
-		//	      amountOfMoneyInSpace.dispose();
-		//	    }
-		//	    amountOfMoneyInSpace = null;
-		//
-		//	    if (agentWealthDistribution != null){
-		//	      agentWealthDistribution.dispose();
-		//	    }
-		//	    agentWealthDistribution = null;
+		if (totalGrassInSpace != null){
+			totalGrassInSpace.dispose();
+		}
+		totalGrassInSpace = null;
+
+		if (agentEnergyLevelDistribution != null){
+			agentEnergyLevelDistribution.dispose();
+		}
+		agentEnergyLevelDistribution = null;
 		//
 		// Create Displays
 		displaySurf = new DisplaySurface(this, "Rabbit Grass Simulation Model Window 1");
-		//	    amountOfMoneyInSpace = new OpenSequenceGraph("Amount Of Money In Space",this);
-		//	    agentWealthDistribution = new OpenHistogram("Agent Wealth", 8, 0);
-		//
+		totalGrassInSpace = new OpenSequenceGraph("Amount Grass In Space",this);
+		agentEnergyLevelDistribution = new OpenHistogram("Agent Energy Level", 8, 0);
+
 		// Register Displays
 		registerDisplaySurface("Rabbit Grass Simulation Model Window 1", displaySurf);
-		//	    this.registerMediaProducer("Plot", amountOfMoneyInSpace);
+		this.registerMediaProducer("Plot", totalGrassInSpace);
 
-		modelManipulator.init();
-
-		// Add a slider for the growth rate.
-		modelManipulator.addSlider("GrassGrowthRate", 0, 100, 10,
-				new SliderListener() {
-			@Override
-			public void execute() {
-				GrassGrowthRate = value;
-			}
-		});
+				
+		
+		
+//		modelManipulator.init();
+//
+//		// Add a slider for the growth rate.
+//		modelManipulator.addSlider("GrassGrowthRate", 0, 1000, 200,
+//				new SliderListener() {
+//			@Override
+//			public void execute() {
+//				GrassGrowthRate = value;
+//			}
+//		});
 
 		// Add a slider for the birth threshold.
-		modelManipulator.addSlider("Birth threshold", 0, 100, 10,
-				new SliderListener() {
-			@Override
-			public void execute() {
-				reproductionEnergy = value;
-			}
-		});
+		
+//		class BirthThresholdSlider extends SliderListener {
+//			
+//			public BirthThresholdSlider(int preValue){
+//				value = preValue;
+//				setFirstVal(preValue);
+//			}
+//			@Override
+//			public void execute() {
+//				reproductionEnergy = value;
+//			}
+//			
+//		}
+//		
+//		SliderListener birthThresholdSlider = new BirthThresholdSlider(ENERGY_LEVEL_TO_REPRODUCE);
+//		
+//		modelManipulator.addSlider("Birth threshold", 0, 100, 10,
+//				birthThresholdSlider);
+		
+		RangePropertyDescriptor pdBirthThreshold = new RangePropertyDescriptor("BirthThreshold", 0, 100, 10);
+	    RangePropertyDescriptor pdGrowthRate = new RangePropertyDescriptor("GrassGrowthRate", 0, 1000, 200);
+	    RangePropertyDescriptor pdNumAgents = new RangePropertyDescriptor("NumAgents", 0, 500, 100);
+	    
+	    descriptors.put("BirthThreshold", pdBirthThreshold);
+	    descriptors.put("GrassGrowthRate", pdGrowthRate);
+	    descriptors.put("NumAgents", pdNumAgents);
+	    
+		
 	}
 
 	/**
@@ -152,8 +190,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		buildDisplay();
 
 		displaySurf.display();
-		//	    amountOfMoneyInSpace.display();
-		//	    agentWealthDistribution.display();
+			    totalGrassInSpace.display();
+			    agentEnergyLevelDistribution.display();
 	}
 
 	/**
@@ -169,8 +207,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 			addNewAgent();
 		}
 		for(int i = 0; i < agentList.size(); i++){
-			RabbitsGrassSimulationAgent cda = (RabbitsGrassSimulationAgent)agentList.get(i);
-			cda.report();
+			RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
+			rga.report();
 		}
 	}
 
@@ -205,21 +243,21 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 		schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationCountLiving());
 
-		//	    class RabbitsGrassSimulationUpdateGrassInSpace extends BasicAction {
-		//	      public void execute(){
-		//	        amountOfMoneyInSpace.step();
-		//	      }
-		//	    }
-		//
-		//	    schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateGrassInSpace());
-		//
-		//	    class RabbitsGrassSimulationUpdateAgentEnergy extends BasicAction {
-		//	      public void execute(){
-		//	        agentWealthDistribution.step();
-		//	      }
-		//	    }
-		//
-		//	    schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateAgentEnergy());
+			    class RabbitsGrassSimulationUpdateGrassInSpace extends BasicAction {
+			      public void execute(){
+			        totalGrassInSpace.step();
+			      }
+			    }
+		
+			    schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateGrassInSpace());
+		
+			    class RabbitsGrassSimulationUpdateAgentEnergy extends BasicAction {
+			      public void execute(){
+			        agentEnergyLevelDistribution.step();
+			      }
+			    }
+		
+			    schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateAgentEnergy());
 	}
 
 	/**
@@ -244,8 +282,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		displaySurf.addDisplayableProbeable(displayMoney, "Grass");
 		displaySurf.addDisplayableProbeable(displayAgents, "Agents");
 
-		//	    amountOfMoneyInSpace.addSequence("Money In Space", new grassInSpace());
-		//	    agentWealthDistribution.createHistogramItem("Agent Wealth",agentList,new agentMoney());
+			    totalGrassInSpace.addSequence("Amount Grass In Space", new grassInSpace());
+			    totalGrassInSpace.addSequence("Amount Grass In Space", new agentsInSpace());
+			    agentEnergyLevelDistribution.createHistogramItem("Agent Energy Level",agentList,new agentEnergy());
 
 	}
 
@@ -253,9 +292,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	 * Add a new agent to this model's agent list and agent space
 	 */
 	private void addNewAgent(){
-		RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(initEnergy, moveLoss);
-		agentList.add(a);
-		rgSpace.addAgent(a);
+		if (agentList.size() < worldXSize * worldYSize) {
+			RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(initEnergy, moveLoss);
+			boolean agentAdded = rgSpace.addAgent(a);
+			if (agentAdded)
+				agentList.add(a);
+		}
 	}
 
 	/**
@@ -267,6 +309,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		for(int i = (agentList.size() - 1); i >= 0 ; i--){
 			RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
 			if(rga.getEnergy() < 1){
+//				rga.report();
 				rgSpace.removeRabbitAt(rga.getX(), rga.getY());
 				agentList.remove(i);
 				count++;
@@ -298,11 +341,13 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	 */
 	private int countLivingAgents(){
 		int livingAgents = 0;
+//		int criticalStateAgents = 0;
 		for(int i = 0; i < agentList.size(); i++){
 			RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent)agentList.get(i);
 			if(rga.getEnergy() > 0) livingAgents++;
+//			if(rga.getEnergy() < 2) criticalStateAgents++;
 		}
-		System.out.println("Number of living agents is: " + livingAgents);
+		System.out.println("Number of living agents is: " + livingAgents /*+ ", " + criticalStateAgents + "blue agents " */);
 
 		return livingAgents;
 	}
@@ -323,7 +368,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	 * that can be modified by the RePast user interface
 	 */
 	public String[] getInitParam(){
-		String[] initParams = { "NumAgents"};
+		String[] initParams = { "NumAgents","BirthThreshold","GrassGrowthRate"};
 		return initParams;
 	}
 

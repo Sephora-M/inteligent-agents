@@ -111,14 +111,16 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	    Object2DGrid grid = rgSpace.getCurrentAgentSpace();
 	    newX = (newX + grid.getSizeX()) % grid.getSizeX();
 	    newY = (newY + grid.getSizeY()) % grid.getSizeY();
-
+//	    System.out.println("energy before = "+energy);
 	    if(tryMove(newX, newY)){
+	    	
 	    	energy += rgSpace.eatGrassAt(x, y);
 	    }
 	    else{
 	      setVxVy();
 	    }
 	    energy -= moveLoss ;
+//	    System.out.println("energy after = "+energy);
 	  }
 	  
 	  /**
