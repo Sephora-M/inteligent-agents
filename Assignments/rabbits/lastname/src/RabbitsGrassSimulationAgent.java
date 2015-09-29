@@ -108,9 +108,9 @@ public class RabbitsGrassSimulationAgent implements Drawable {
         //    System.out.println("energy before = "+energy);
         if(tryMove(newX, newY)) {
             energy += rgSpace.eatGrassAt(x, y);
-        } else {
-            setVxVy();
         }
+        
+        setVxVy();
         energy -= moveLoss ;
         //System.out.println("energy after = "+energy);
     }
@@ -124,9 +124,15 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     private void setVxVy() {
         vX = 0;
         vY = 0;
-        while((vX == 0) && ( vY == 0)) {
-            vX = (int)Math.floor(Math.random() * 3) - 1;
-            vY = (int)Math.floor(Math.random() * 3) - 1;
+        
+        if (Math.random() < 0.5) {
+        	while (vX == 0) {
+        		vX = (int) Math.floor(Math.random() * 3) - 1;
+        	}
+        } else {
+        	while (vY == 0) {
+        		vY = (int) Math.floor(Math.random() * 3) - 1;
+        	}
         }
     }
 
