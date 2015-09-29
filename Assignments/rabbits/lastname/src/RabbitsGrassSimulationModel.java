@@ -125,7 +125,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         // Create Displays
         displaySurf = new DisplaySurface(this, "Rabbit Grass Simulation Model Window 1");
         totalGrassInSpace = new OpenSequenceGraph("Amount Grass In Space",this);
-        agentEnergyLevelDistribution = new OpenHistogram("Agent Energy Level", 8, 0);
+        agentEnergyLevelDistribution = new OpenHistogram("Agent Energy Level", 8, -1);
 
         // Register Displays
         registerDisplaySurface("Rabbit Grass Simulation Model Window 1", displaySurf);
