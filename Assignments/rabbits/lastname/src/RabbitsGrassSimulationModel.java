@@ -248,7 +248,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         displaySurf.addDisplayableProbeable(displayAgents, "Agents");
 
         totalGrassInSpace.addSequence("Amount Grass In Space", new grassInSpace());
-        totalGrassInSpace.addSequence("Amount Grass In Space", new agentsInSpace());
+        totalGrassInSpace.addSequence("Amount of Agents In Space", new agentsInSpace());
         agentEnergyLevelDistribution.createHistogramItem("Agent Energy Level", agentList, new agentEnergy());
 
     }
