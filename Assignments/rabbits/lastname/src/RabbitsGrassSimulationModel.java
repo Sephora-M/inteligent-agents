@@ -3,9 +3,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import uchicago.src.reflector.RangePropertyDescriptor;
-import uchicago.src.sim.analysis.BinDataSource;
 import uchicago.src.sim.analysis.DataSource;
-import uchicago.src.sim.analysis.OpenHistogram;
 import uchicago.src.sim.analysis.OpenSequenceGraph;
 import uchicago.src.sim.analysis.Sequence;
 import uchicago.src.sim.engine.BasicAction;
@@ -57,7 +55,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private DisplaySurface displaySurf;
 
     private OpenSequenceGraph totalGrassInSpace;
-    private OpenHistogram agentEnergyLevelDistribution;
+    private OpenSequenceGraph totalAgentsLiving;
 
     class grassInSpace implements DataSource, Sequence {
 
@@ -66,7 +64,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         }
 
         public double getSValue() {
-            return (double)rgSpace.getTotalGrass();
+            return (double) rgSpace.getTotalGrass();
         }
     }
 
@@ -77,14 +75,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         }
 
         public double getSValue() {
-            return (double)agentList.size();
-        }
-    }
-
-    class agentEnergy implements BinDataSource {
-        public double getBinValue(Object o) {
-            RabbitsGrassSimulationAgent rga = (RabbitsGrassSimulationAgent) o;
-            return (double) rga.getEnergy();
+            return (double) agentList.size();
         }
     }
 
@@ -116,20 +107,21 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             totalGrassInSpace.dispose();
         }
         totalGrassInSpace = null;
-
-        if (agentEnergyLevelDistribution != null) {
-            agentEnergyLevelDistribution.dispose();
+        
+        if (totalAgentsLiving != null) {
+        	totalAgentsLiving.dispose();
         }
-        agentEnergyLevelDistribution = null;
+        totalAgentsLiving = null;
 
         // Create Displays
         displaySurf = new DisplaySurface(this, "Rabbit Grass Simulation Model Window 1");
         totalGrassInSpace = new OpenSequenceGraph("Amount Grass In Space",this);
-        agentEnergyLevelDistribution = new OpenHistogram("Agent Energy Level", 8, -1);
+        totalAgentsLiving = new OpenSequenceGraph("Amount of living Agents", this);
 
         // Register Displays
         registerDisplaySurface("Rabbit Grass Simulation Model Window 1", displaySurf);
         this.registerMediaProducer("Plot", totalGrassInSpace);
+        this.registerMediaProducer("Plot", totalAgentsLiving);
 
         // Create required sliders
         RangePropertyDescriptor pdBirthThreshold = new RangePropertyDescriptor("BirthThreshold", 0, 100, 10);
@@ -154,7 +146,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
         displaySurf.display();
         totalGrassInSpace.display();
-        agentEnergyLevelDistribution.display();
+        totalAgentsLiving.display();
     }
 
     /**
@@ -215,14 +207,14 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         }
 
         schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateGrassInSpace());
-
-        class RabbitsGrassSimulationUpdateAgentEnergy extends BasicAction {
-            public void execute() {
-                agentEnergyLevelDistribution.step();
+        
+        class RabbitsGrassSimulationUpdateAgentsInSpace extends BasicAction {
+            public void execute(){
+                totalAgentsLiving.step();
             }
         }
 
-        schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateAgentEnergy());
+        schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateAgentsInSpace());
     }
 
     /**
@@ -248,8 +240,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         displaySurf.addDisplayableProbeable(displayAgents, "Agents");
 
         totalGrassInSpace.addSequence("Amount Grass In Space", new grassInSpace());
-        totalGrassInSpace.addSequence("Amount of Agents In Space", new agentsInSpace());
-        agentEnergyLevelDistribution.createHistogramItem("Agent Energy Level", agentList, new agentEnergy());
+        totalAgentsLiving.addSequence("Amount of Agents In Space", new agentsInSpace());
 
     }
 
