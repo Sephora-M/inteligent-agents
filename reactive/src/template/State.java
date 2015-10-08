@@ -1,5 +1,7 @@
 package template;
 
+import java.util.List;
+
 import logist.topology.Topology.City;
 
 public class State {
@@ -7,11 +9,13 @@ public class State {
 	public static enum ActionType {PICK, MOVE}
 	private final City mCurrentCity;
 	private final City mDestinationCity;
-	private List<ActionStruct> actions;
+	private List<ActionContainer> mActions;
 	
 	public State(City currentCity, City destinationCity) {
 		mCurrentCity = currentCity;
 		mDestinationCity = destinationCity;
+		
+		computePossibleActions();
 	}
 	
 	public City getSourceCity() {
@@ -20,6 +24,10 @@ public class State {
 	
 	public City getDestinationCity() {
 		return mDestinationCity;
+	}
+	
+	public List<ActionContainer> getPossibleAction() {
+		return mActions;
 	}
 	
 	@Override
@@ -38,5 +46,9 @@ public class State {
 			return mCurrentCity.equals(s.mCurrentCity) && mDestinationCity.equals(s.mDestinationCity);
 		}
 	}
-
+	
+	private void computePossibleActions() {
+		//TODO
+	}
+ 
 }
