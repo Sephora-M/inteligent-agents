@@ -23,8 +23,10 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private double pPickup;
 	private List<State> states;
 	private Topology topology;
+	private TaskDistribution mTaskDistribution;
 	private Map<State, Double> vRewardsReachedFromState;
-	private Map<State, ActionStruct> bestActionForState;
+	private Map<State, ActionContainer> bestActionForState;
+	private Map<StateActionPair<State, ActionContainer>, Double> mRewardMap;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
@@ -36,6 +38,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.random = new Random();
 		this.pPickup = discount;
 		this.topology = topology;
+		mTaskDistribution = td;
 		
 		init();
 
@@ -53,7 +56,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			action = new Pickup(availableTask);
 		}*/
 
-		ActionStruct bestAction = lookForBestAction(vehicle.getCurrentCity(), availableTask.deliveryCity);
+		final State s = new State(vehicle.getCurrentCity(), availableTask.deliveryCity);
+		final ActionContainer bestAction = bestActionForState.get(s);
 		
 		if (availableTask == null || bestAction.getAction() instanceof Move) {
 			action = new Move(bestAction.getDestinationCity());
@@ -81,20 +85,35 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		for (State s : states) {
 			vRewardsReachedFromState.put(s, 0.0);
 		}
+		
+		// Create the reward map
+		mRewardMap = new HashMap<StateActionPair<State, ActionContainer>, Double>();
+		for (State s : states) {
+			for (ActionContainer a : possibleActionsFromState(s)) {
+				final double reward;
+				if (a.getAction() instanceof Pickup) {
+					reward = mTaskDistribution.reward(s.getSourceCity(), s.getDestinationCity());
+				} else {
+					reward = 0;
+				}
+				// TODO Remove cost of the travel!
+				mRewardMap.put(new StateActionPair<State, ActionContainer>(s, a), reward);
+			}
+		}
 	}
 
-	private ActionStruct lookForBestAction(City currentVehicleCity, City deliveryCity) {
+	private ActionContainer lookForBestAction(City currentVehicleCity, City deliveryCity) {
 		// TODO(Look up in a precomputed table what is the best action with that "currentCity" and "deliveryCity")
 		return null;
 	}
 	
-	private List<ActionStruct> possibleActionsFromState(State s) {
-		ArrayList<ActionStruct> actions = new ArrayList<ActionStruct>();
+	private List<ActionContainer> possibleActionsFromState(State s) {
+		ArrayList<ActionContainer> actions = new ArrayList<ActionContainer>();
 		
 		for (City to : topology.cities()) {
 			if (!(to.equals(s.getDestinationCity()))) {
 				if (s.getSourceCity().hasNeighbor(to)) {
-					actions.add(new ActionStruct(new Move(to), to));
+					//actions.add(new ActionContainer(new Move(to), to));
 				}
 			}
 		}
@@ -108,7 +127,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		
 		do {
 			for (State s : states) {
-				for (ActionStruct action : possibleActionsFromState(s)) {
+				for (ActionContainer action : possibleActionsFromState(s)) {
 					
 				}
 			}
