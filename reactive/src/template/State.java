@@ -14,8 +14,6 @@ public class State {
 	public State(City currentCity, City destinationCity) {
 		mCurrentCity = currentCity;
 		mDestinationCity = destinationCity;
-		
-		computePossibleActions();
 	}
 	
 	public City getSourceCity() {
@@ -46,9 +44,4 @@ public class State {
 			return mCurrentCity.equals(s.mCurrentCity) && mDestinationCity.equals(s.mDestinationCity);
 		}
 	}
-	
-	private void computePossibleActions() {
-		//TODO
-	}
- 
 }

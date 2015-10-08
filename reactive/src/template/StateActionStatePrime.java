@@ -1,13 +1,15 @@
 package template;
 
-public class StateActionPair {
+public class StateActionStatePrime {
 	
 	private final State mState;
 	private final ActionContainer mAction;
+	private final State mStatePrime;
 	
-	public StateActionPair(State s, ActionContainer a) {
+	public StateActionStatePrime(State s, ActionContainer a, State sPrime) {
 		mState = s;
 		mAction = a;
+		mStatePrime = sPrime;
 	}
 	
 	public State getState() {
@@ -16,6 +18,10 @@ public class StateActionPair {
 	
 	public ActionContainer getAction() {
 		return mAction;
+	}
+	
+	public State getStatePrime() {
+		return mStatePrime;
 	}
 
 }
