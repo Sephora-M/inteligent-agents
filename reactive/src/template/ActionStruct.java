@@ -7,12 +7,10 @@ public class ActionStruct {
 	
 	private final Action mAction;
 	private final City mDestinationCity;
-	private final double mReward;
 	
-	public ActionStruct(Action bestAction, City destinationCity, double reward) {
+	public ActionStruct(Action bestAction, City destinationCity) {
 		mAction = bestAction;
 		mDestinationCity = destinationCity;
-		mReward = reward;
 	}
 	
 	public Action getAction() {
@@ -23,8 +21,4 @@ public class ActionStruct {
 		return mDestinationCity;
 	}
 	
-	public double getReward() {
-		return mReward;
-	}
-
 }

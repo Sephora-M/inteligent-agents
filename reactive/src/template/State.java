@@ -4,25 +4,27 @@ import logist.topology.Topology.City;
 
 public class State {
 	
-	private final City mSource;
-	private final City mDestination;
+	public static enum ActionType {PICK, MOVE}
+	private final City mCurrentCity;
+	private final City mDestinationCity;
+	private List<ActionStruct> actions;
 	
-	public State(City source, City destination) {
-		mSource = source;
-		mDestination = destination;
+	public State(City currentCity, City destinationCity) {
+		mCurrentCity = currentCity;
+		mDestinationCity = destinationCity;
 	}
 	
 	public City getSourceCity() {
-		return mSource;
+		return mCurrentCity;
 	}
 	
 	public City getDestinationCity() {
-		return mDestination;
+		return mDestinationCity;
 	}
 	
 	@Override
 	public String toString() {
-		return "State (from, to): (" + mSource + "," + mDestination + ")"; 
+		return "State (from, to): (" + mCurrentCity + "," + mDestinationCity + ")"; 
 	}
 	
 	@Override
@@ -33,7 +35,7 @@ public class State {
 			return true;
 		} else {
 			State s = (State) obj;
-			return mSource.equals(s.mSource) && mDestination.equals(s.mDestination);
+			return mCurrentCity.equals(s.mCurrentCity) && mDestinationCity.equals(s.mDestinationCity);
 		}
 	}
 

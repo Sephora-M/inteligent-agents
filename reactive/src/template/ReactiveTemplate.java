@@ -1,4 +1,4 @@
-package reactive.src.template;
+package template;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private Map<State, Double> vRewardsReachedFromState;
 	private Map<State, ActionStruct> bestActionForState;
 
-//	@Override
+	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
@@ -37,29 +37,29 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.pPickup = discount;
 		this.topology = topology;
 		
-		//init();
+		init();
 
-		//reinforcementLearning();
+		reinforcementLearning();
 	}
 
-//	@Override
+	@Override
 	public Action act(Vehicle vehicle, Task availableTask) {
 		Action action;
 
-		if (availableTask == null || random.nextDouble() > pPickup) {
+		/*if (availableTask == null || random.nextDouble() > pPickup) {
 			City currentCity = vehicle.getCurrentCity();
 			action = new Move(currentCity.randomNeighbor(random));
 		} else {
 			action = new Pickup(availableTask);
-		}
+		}*/
 
-		/*ActionStruct bestAction = lookForBestAction(vehicle.getCurrentCity(), availableTask.deliveryCity);
-
+		ActionStruct bestAction = lookForBestAction(vehicle.getCurrentCity(), availableTask.deliveryCity);
+		
 		if (availableTask == null || bestAction.getAction() instanceof Move) {
 			action = new Move(bestAction.getDestinationCity());
 		} else {
 			action = new Pickup(availableTask);
-		}*/
+		}
 
 		return action;
 	}
@@ -89,8 +89,17 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	}
 	
 	private List<ActionStruct> possibleActionsFromState(State s) {
-		// TODO
-		return null;
+		ArrayList<ActionStruct> actions = new ArrayList<ActionStruct>();
+		
+		for (City to : topology.cities()) {
+			if (!(to.equals(s.getDestinationCity()))) {
+				if (s.getSourceCity().hasNeighbor(to)) {
+					actions.add(new ActionStruct(new Move(to), to));
+				}
+			}
+		}
+		
+		return actions;
 	}
 
 	private void reinforcementLearning() {
