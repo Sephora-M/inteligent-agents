@@ -9,38 +9,23 @@ public class State {
 	public static enum ActionType {PICK, MOVE}
 	private final City mCurrentCity;
 	private final City mDestinationCity;
-	private double value;
-	private ActionStruct bestAction;
-//	private List<ActionStruct> actions;
+	private List<ActionContainer> mActions;
 	
-	public ActionStruct getBestAction() {
-		return bestAction;
-	}
-
-	public void setBestAction(ActionStruct bestAction) {
-		this.bestAction = bestAction;
-	}
-
 	public State(City currentCity, City destinationCity) {
 		mCurrentCity = currentCity;
 		mDestinationCity = destinationCity;
-		value = 0.0;
 	}
 	
-	public double getValue() {
-		return value;
-	}
-
-	public void setValue(double value) {
-		this.value = value;
-	}
-
 	public City getSourceCity() {
 		return mCurrentCity;
 	}
 	
 	public City getDestinationCity() {
 		return mDestinationCity;
+	}
+	
+	public List<ActionContainer> getPossibleAction() {
+		return mActions;
 	}
 	
 	@Override
@@ -59,5 +44,4 @@ public class State {
 			return mCurrentCity.equals(s.mCurrentCity) && mDestinationCity.equals(s.mDestinationCity);
 		}
 	}
-
 }
