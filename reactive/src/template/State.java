@@ -10,12 +10,42 @@ public class State {
 	private final City mCurrentCity;
 	private final City mDestinationCity;
 	private List<ActionContainer> mActions;
-	
+	private double Vvalue;
+	private double Tvalue;
+	private ActionContainer bestAction;
+
 	public State(City currentCity, City destinationCity) {
 		mCurrentCity = currentCity;
 		mDestinationCity = destinationCity;
+		Vvalue = 0;
+		Tvalue = 0;
+		bestAction = null;
 	}
 	
+	public ActionContainer getBestAction() {
+		return bestAction;
+	}
+
+	public void setBestAction(ActionContainer bestAction) {
+		this.bestAction = bestAction;
+	}
+	
+	public double getTvalue() {
+		return Tvalue;
+	}
+
+	public void setTvalue(double tvalue) {
+		Tvalue = tvalue;
+	}
+	
+	public double getVvalue() {
+		return Vvalue;
+	}
+
+	public void setVvalue(double vvalue) {
+		Vvalue = vvalue;
+	}
+
 	public City getSourceCity() {
 		return mCurrentCity;
 	}
