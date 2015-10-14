@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import logist.simulation.Vehicle;
 import logist.agent.Agent;
@@ -25,9 +26,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private int mCostVehiclePerKm;
 
 	private List<State> mStates;
-	private Map<StateActionPair, Double> mRewardMap; // Called 'R' in the course
-	private Map<StateActionStatePrime, Double> mTMap; // Called 'T' in the course
-	
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 
@@ -42,8 +40,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.mCostVehiclePerKm = agent.vehicles().get(0).costPerKm();
 		
 		mStates = createAllStates();
-		mRewardMap = createRMap();
-		mTMap = createTMap();
+		createTMap();
 		reinforcementLearning();
 	}
 
@@ -51,19 +48,11 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	public Action act(Vehicle vehicle, Task availableTask) {
 		Action action;
 
-//		if (availableTask == null || random.nextDouble() > pPickup) {
-//			City currentCity = vehicle.getCurrentCity();
-//			action = new Move(currentCity.randomNeighbor(random));
-//		} else {
-//			action = new Pickup(availableTask);
-//		}
-		
 		final State s;
 		if (availableTask != null)
 			s = findState(vehicle.getCurrentCity(), availableTask.deliveryCity);
 		else
 			s = findState(vehicle.getCurrentCity(), null);
-		
 		final ActionContainer bestAction = s.getBestAction();
 
 		if (availableTask == null || bestAction.getActionType().equals(ActionType.MOVE)) {
@@ -87,30 +76,9 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		return mStates;
 	}
 
-	// Create the reward map "R".
-	private Map<StateActionPair, Double> createRMap() {
-		mRewardMap = new HashMap<StateActionPair, Double>();
-		for (State s : mStates) {
-			final City sourceCity = s.getSourceCity();
-			for (ActionContainer a : possibleActionsFromState(s)) {
-				final City destinationCity = a.getDestinationCity();
-				double reward;
-				if (a.getActionType().equals(ActionType.PICKUP)) {
-					reward = mTaskDistribution.reward(sourceCity, destinationCity);
-				} else {
-					reward = 0;
-				}
-				reward -= mCostVehiclePerKm * sourceCity.distanceTo(destinationCity);
-				mRewardMap.put(new StateActionPair(s, a), reward);
-				
-			}
-		}
-		return mRewardMap;
-	}
 
 	// Create the "T" map.
-	private Map<StateActionStatePrime, Double> createTMap() {
-		mTMap = new HashMap<StateActionStatePrime, Double>();
+	private void createTMap() {
 		for (State s : mStates) {
 			for (ActionContainer action : possibleActionsFromState(s)) {
 				City destinationCity = action.getDestinationCity();
@@ -120,13 +88,11 @@ public class ReactiveTemplate implements ReactiveBehavior {
 						final double p = mTaskDistribution.probability(sPrime.getSourceCity(), sPrime.getDestinationCity());
 						sPrime.setTvalue(p);
 					} else {
-						mTMap.put(new StateActionStatePrime(s, action, sPrime), 0.0);
 						sPrime.setTvalue(0.0);
 					}
-				}
+				}			
 			}
 		}
-		return mTMap;
 	}
 	
 	
@@ -137,6 +103,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		City sourceCity = s.getSourceCity();
 		List<City> neighbors = new ArrayList<City>();
 		neighbors.addAll(sourceCity.neighbors());
+		
 		for(City neighbor: neighbors){
 			actions.add(new ActionContainer(ActionType.MOVE, neighbor));
 		}
@@ -148,44 +115,39 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		return actions;
 	}
-
+	
 	private void reinforcementLearning() {
-		double sumDiffBetweenTwoIterations = 0.0;
-		int maxIter = 10; // i'm using a small fixed number of iteration here 
-						  // because I realized that the learning process was quite
-						  // fast (converges after ~iteration)
 		double epsilon = 0.01;
-
-//		do {
-		for (int t=0; t<maxIter;t++){
-			// print out to observe the evolution of V(s) and bestAction(S)
+		double maxDiff;
+		do { // stopping criteria : the maximum value of the vector |V(s)-(s')| is less than epsilon
+//		for (int t=0; t<maxIter;t++){
+//			 print out to observe the evolution of V(s) and bestAction(S)
 //			for (State s : mStates){
 //				if (s.getBestAction() != null)
 //				System.out.print("[ "+s.getVvalue() +", "+s.getBestAction().getDestinationCity().name+"] ");
 //				else
 //					System.out.print("[ "+s.getVvalue() +", "+s.getBestAction()+"] ");
 //			}
-			System.out.println();
+//			System.out.println();
+			maxDiff = -1.0;
 			for (State s : mStates) {
-				City currentCity = s.getSourceCity();
 				List<ActionContainer> actions = possibleActionsFromState(s);
 				List<Double> Q = new ArrayList<Double>(actions.size());
-				for (int i = 0; i<actions.size(); i++) {
+				for (int i = 0; i<actions.size();i++) {
 					double Qval;
 					double R;
-					ActionContainer currentAction = actions.get(i);
-					if (currentAction.getActionType().equals(ActionType.PICKUP)) {
-						R = mTaskDistribution.reward(currentCity, currentAction.getDestinationCity());
+					if (actions.get(i).getActionType().equals(ActionType.PICKUP)) {
+						R = mTaskDistribution.reward(s.getSourceCity(), actions.get(i).getDestinationCity() );
 					} else {
 						R = 0;
 					}
-					R -= mCostVehiclePerKm * currentCity.distanceTo(currentAction.getDestinationCity());
+					R -= mCostVehiclePerKm * s.getSourceCity().distanceTo(actions.get(i).getDestinationCity());
 					
 					double sum = 0.0;
 					
 					for (State next_s : mStates){
-						if (next_s.getSourceCity().id == actions.get(i).getDestinationCity().id) {
-							sum += next_s.getTvalue()*next_s.getVvalue();
+						if(next_s.getSourceCity().id == actions.get(i).getDestinationCity().id){
+							sum+=next_s.getTvalue()*next_s.getVvalue(); 	
 						}
 					}
 					
@@ -195,39 +157,37 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				
 				int Qmax = findMax(Q);
 				s.setBestAction(actions.get(Qmax));
+				double preV = s.getVvalue();
+				
 				s.setVvalue(Q.get(Qmax));
+				if(Math.abs(s.getVvalue()-preV)>maxDiff)
+					maxDiff = Math.abs(s.getVvalue()-preV);
 			}
-			
-		}
-//		} while(sumDiffBetweenTwoIterations > epsilon);
+		} while(maxDiff > epsilon);
 	}
 	
 	private int findMax(List<Double> Q){
 		Double max = Double.NEGATIVE_INFINITY;
 		int best = -1;
-		for (int i = 0; i<Q.size(); i++) {
-			if (Q.get(i) > max){
+		for(int i =0; i<Q.size();i++){
+			if (Q.get(i)>max){
 				max = Q.get(i);
 				best = i;
 			}	
 		}
 		return best;
 	}
-	
 	private State findState(City from, City to){
-		if (from == null) {
-			return null;
-		}
-		for (State state: mStates) {
-			if (state.getSourceCity().id == from.id) {
-				if (state.getDestinationCity() == null) {
-					if (to == null) {
-						return state;
+		if (from == null) return null;
+		for (State state: mStates){
+			if (state.getSourceCity().id == from.id){
+				if(state.getDestinationCity()==null){
+					if (to == null){
+					return state;
 					}
-				} else {
-					if (state.getDestinationCity().id == to.id) {
+				} else{
+					if (state.getDestinationCity().id==to.id)
 						return state;
-					}
 				}
 			} 
 		}
