@@ -1,10 +1,7 @@
 package template;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import logist.simulation.Vehicle;
 import logist.agent.Agent;
@@ -40,7 +37,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.mCostVehiclePerKm = agent.vehicles().get(0).costPerKm();
 		
 		mStates = createAllStates();
-		createTMap();
+		computeTValueForEachState();
 		reinforcementLearning();
 	}
 
@@ -76,9 +73,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		return mStates;
 	}
 
-
-	// Create the "T" map.
-	private void createTMap() {
+	// Compute for each state its "T" value.
+	private void computeTValueForEachState() {
 		for (State s : mStates) {
 			for (ActionContainer action : possibleActionsFromState(s)) {
 				City destinationCity = action.getDestinationCity();
@@ -94,7 +90,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			}
 		}
 	}
-	
 	
 	private List<ActionContainer> possibleActionsFromState(State s) {
 		ArrayList<ActionContainer> actions = new ArrayList<ActionContainer>();
@@ -177,6 +172,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		}
 		return best;
 	}
+	
 	private State findState(City from, City to){
 		if (from == null) return null;
 		for (State state: mStates){
