@@ -114,16 +114,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private void reinforcementLearning() {
 		double epsilon = 0.01;
 		double maxDiff;
-		do { // stopping criteria : the maximum value of the vector |V(s)-(s')| is less than epsilon
-//		for (int t=0; t<maxIter;t++){
-//			 print out to observe the evolution of V(s) and bestAction(S)
-//			for (State s : mStates){
-//				if (s.getBestAction() != null)
-//				System.out.print("[ "+s.getVvalue() +", "+s.getBestAction().getDestinationCity().name+"] ");
-//				else
-//					System.out.print("[ "+s.getVvalue() +", "+s.getBestAction()+"] ");
-//			}
-//			System.out.println();
+		do {
 			maxDiff = -1.0;
 			for (State s : mStates) {
 				List<ActionContainer> actions = possibleActionsFromState(s);
