@@ -1,15 +1,17 @@
 package template;
 
-import java.util.List;
-
 import logist.topology.Topology.City;
 
+/**
+ * This class models a state. It is made of a source {@link City} and a destination
+ * {@link City}. Furthermore, it also has the "TValue" and "Vvalue" values.
+ * You can get the best action to go for that state with the {@link #getBestAction()} method.
+ *
+ */
 public class State {
 	
-	public static enum ActionType {PICK, MOVE}
 	private final City mCurrentCity;
 	private final City mDestinationCity;
-	private List<ActionContainer> mActions;
 	private double Vvalue;
 	private double Tvalue;
 	private ActionContainer bestAction;
@@ -22,6 +24,9 @@ public class State {
 		bestAction = null;
 	}
 	
+	/**
+	 * @return The bestion action to do for that state.
+	 */
 	public ActionContainer getBestAction() {
 		return bestAction;
 	}
@@ -52,10 +57,6 @@ public class State {
 	
 	public City getDestinationCity() {
 		return mDestinationCity;
-	}
-	
-	public List<ActionContainer> getPossibleAction() {
-		return mActions;
 	}
 	
 	@Override

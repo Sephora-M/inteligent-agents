@@ -2,8 +2,14 @@ package template;
 
 import logist.topology.Topology.City;
 
+/**
+ * This class models an action. It is made of an {@link ActionType} and of a destination
+ * {@link City}.
+ *
+ */
 public class ActionContainer {
 	
+	public static enum ActionType {PICK, MOVE}
 	private final ReactiveTemplate.ActionType mActionType;
 	private final City mDestinationCity;
 	
