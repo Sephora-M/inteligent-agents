@@ -46,6 +46,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		// ...
 	}
 	
+	
 	@Override
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
@@ -61,7 +62,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			plan = naivePlan(vehicle, tasks);
 			break;
 		default:
-			throw new AssertionError("Should not happen.");
+			throw new AssertionError("Unknown algorithm!");
 		}		
 		return plan;
 	}
