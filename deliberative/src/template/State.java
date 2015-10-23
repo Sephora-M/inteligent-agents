@@ -6,34 +6,129 @@ import logist.task.Task;
 import logist.task.TaskSet;
 import logist.topology.Topology.City;
 
-public class State {
+public class State implements Comparable<State>{
 	
-	public static enum ActionType {PICK, MOVE}
+//	public static enum ActionType {PICK, MOVE}
 	private final City mCurrentCity;
 	private TaskSet toDeliver ;
+	public TaskSet getToDeliver() {
+		return toDeliver;
+	}
+
 	private TaskSet remainingTasks;
-	private boolean isFull;
+	public TaskSet getRemainingTasks() {
+		return remainingTasks;
+	}
 
 
-	public State(City currentCity, TaskSet remainingTasks) {
+	private boolean isFull; // true if the vehicle has reached its capacity
+	private double heuristic;
+
+
+	public State(City currentCity, TaskSet remainingTasks,TaskSet toDeliver, boolean isFull) {
 		mCurrentCity = currentCity;
 		this.remainingTasks = remainingTasks;
-		
+		this.toDeliver = toDeliver;
+		this.isFull = isFull;
+		heuristic = computeHval();
 	}
 	
-	public void removeTask(Task t){
+	public void removeRemainingTask(Task t){
 		remainingTasks.remove(t);
 	}
 	
+	public void upDateToDeliverTask(TaskSet t){
+		toDeliver = t;
+	}
 	public boolean isGoal(){
-		return remainingTasks.isEmpty();
+		return remainingTasks.isEmpty() && toDeliver.isEmpty();
 	}
 	
+	public double getHeuristic(){
+		return heuristic;
+	}
+	
+	public boolean getIsFull(){
+		return isFull;
+	}
+	
+	/*
+	 * The heuristic is the following:
+	 * if there's no task to pick up in the environment, set hVal to be the sum of the shortest paths
+	 * from the current city to the destination of tasks being currently carried
+	 * 
+	 * if there're still some tasks to pick up, the hVal is the sum of the shortest paths from the current city
+	 * the pickup city of the remaining tasks
+	 * 
+	 * the intuition is that we do not want to move too far away from cities with a task to pick up or drop off 
+	 */
+	private double computeHval(){
+		double hVal = 0.0;
+		
+//		if (!remainingTasks.isEmpty()){
+			for (Task task: remainingTasks){
+				hVal += mCurrentCity.distanceTo(task.pickupCity); 
+			}
+//		} else {
+			for (Task task: toDeliver){
+				hVal += mCurrentCity.distanceTo(task.deliveryCity); 
+			}
+//		}
 
+		return hVal;
+	}
+	
+	public String toStringRemainingTasks(){
+		String s = " ";
+		
+		for (Task task: remainingTasks){
+			s += "("+task.pickupCity+ ", " + task.deliveryCity +")";
+		}
+		
+		return s;
+	}
+	
+	public String toStringToDeliverTasks(){
+		String s = " ";
+		
+		for (Task task: toDeliver){
+			s += "("+task.pickupCity+ ", " + task.deliveryCity +")";
+		}
+		
+		return s;
+	}
+	
+	public City getCurrentCity(){
+		return mCurrentCity;
+	}
 	
 	@Override
 	public String toString() {
-		return "State : (" + mCurrentCity + "," + remainingTasks.size() + "tasks remaining)"; 
+		return "State : (" + mCurrentCity + "," + remainingTasks.size() + "tasks remaining, "+ ")"; 
+	}
+
+	@Override
+	public int compareTo(State s) {
+		double diff =  s.getHeuristic() - heuristic;
+		if (diff < 0)
+			return -1;
+		else if  (diff > 0) 
+			return 1;
+		return 0;
+		
+	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if (!(obj instanceof State)) {
+			return false;
+		} else if (obj == this) {
+			return true;
+		} else {
+			State s = (State) obj;
+			return mCurrentCity.equals(s.mCurrentCity) && remainingTasks.equals(s.remainingTasks) &&  toDeliver.equals(s.toDeliver) ;
+		}
+		
 	}
 	
 }
