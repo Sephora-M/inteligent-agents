@@ -21,7 +21,7 @@ import logist.topology.Topology.City;
 @SuppressWarnings("unused")
 public class DeliberativeTemplate implements DeliberativeBehavior {
 
-	enum Algorithm { BFS, ASTAR }
+	enum Algorithm { BFS, ASTAR, DFS, NAIVE }
 	
 	/* Environment */
 	Topology topology;
@@ -56,22 +56,23 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
 		exceedFullCap = capacity < tasks.size();
-//		capacity = vehicle.capacity();
-		 
+		
+		LinkedList<City> route;
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
 		case ASTAR:
-			// ...
-			DFSroute(vehicle, tasks);
-			BFSroute(vehicle, tasks);
-			AStarRoute(vehicle, tasks);
-			plan = naivePlan(vehicle, tasks);
+			route = AStarRoute(vehicle, tasks);
+			plan = generatePlan(route, vehicle, tasks);
 			break;
 		case BFS:
-			// ...
-			DFSroute(vehicle, tasks);
-			BFSroute(vehicle, tasks);
-			AStarRoute(vehicle, tasks);
+			route = BFSroute(vehicle, tasks);
+			plan = generatePlan(route, vehicle, tasks);
+			break;
+		case DFS:
+			route = DFSroute(vehicle, tasks);
+			plan = generatePlan(route, vehicle, tasks);
+			break;
+		case NAIVE:
 			plan = naivePlan(vehicle, tasks);
 			break;
 		default:
@@ -99,8 +100,46 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 			// set current city
 			current = task.deliveryCity;
+			
 			 
 		}
+		return plan;
+	}
+	
+	/**
+	 * Generate a plan for a vehicle according to a given route
+	 * @param route
+	 * @param vehicle
+	 * @param tasks
+	 * @return
+	 */
+	private Plan generatePlan(LinkedList<City> route, Vehicle vehicle, TaskSet tasks){
+		City currentCity = route.peek();
+		Plan plan = new Plan(currentCity);
+		TaskSet currentTasks = vehicle.getCurrentTasks();
+		boolean first = true;
+		
+		while (!route.isEmpty()) {
+			currentCity = route.poll();
+			if (!first)
+				plan.appendMove(currentCity);
+			else 
+				first = false;
+			Task dropOff = taskToDropOffInCity(currentTasks,currentCity);
+			while (dropOff != null){
+				plan.appendDelivery(dropOff);
+				currentTasks.remove(dropOff);
+				dropOff = taskToDropOffInCity(currentTasks,currentCity);
+			}
+			Task pickUp = taskToPickUpInCity(tasks,currentCity);
+			while (pickUp != null && !isFull(tasks)){
+				plan.appendPickup(pickUp);
+				tasks.remove(pickUp);
+				currentTasks.add(pickUp);
+				pickUp = taskToPickUpInCity(tasks,currentCity);
+			}
+			
+		}  ;
 		return plan;
 	}
 	
@@ -116,6 +155,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		boolean isFull = isFull(currentTasks); 
 		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull, exceedFullCap); 
 		initNode.g = 0.0;
+		initNode.addToRoute(current);
 		
 		System.out.println("remains "+initNode.toStringRemainingTasks());
 		
@@ -198,6 +238,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		boolean isFull = isFull(currentTasks); 
 		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull, exceedFullCap); 
 		initNode.g = 0.0;
+		initNode.addToRoute(current);
 		
 		LinkedList<State> Q = new LinkedList<State>();
 		LinkedList<State> C = new LinkedList<State>();
@@ -271,6 +312,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		boolean isFull = isFull(currentTasks); 
 		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull, exceedFullCap); 
 		initNode.g = 0.0;
+		initNode.addToRoute(current);
 		
 		StateList Q = new StateList();
 		LinkedList<State> C = new LinkedList<State>();
