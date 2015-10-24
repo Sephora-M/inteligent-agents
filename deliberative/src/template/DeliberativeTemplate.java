@@ -30,6 +30,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	/* the properties of the agent */
 	Agent agent;
 	int capacity;
+	boolean exceedFullCap;
 
 	/* the planning class */
 	Algorithm algorithm;
@@ -41,7 +42,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		this.agent = agent;
 		
 		// initialize the planner
-		int capacity = agent.vehicles().get(0).capacity();
+		capacity = agent.vehicles().get(0).capacity();
 		String algorithmName = agent.readProperty("algorithm", String.class, "ASTAR");
 		
 		// Throws IllegalArgumentException if algorithm is unknown
@@ -54,17 +55,24 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	@Override
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
-		
+		exceedFullCap = capacity < tasks.size();
+//		capacity = vehicle.capacity();
 		 
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
 		case ASTAR:
 			// ...
-			plan = aStarPlan(vehicle, tasks);
+			DFSroute(vehicle, tasks);
+			BFSroute(vehicle, tasks);
+			AStarRoute(vehicle, tasks);
+			plan = naivePlan(vehicle, tasks);
 			break;
 		case BFS:
 			// ...
-			plan = aStarPlan(vehicle, tasks);
+			DFSroute(vehicle, tasks);
+			BFSroute(vehicle, tasks);
+			AStarRoute(vehicle, tasks);
+			plan = naivePlan(vehicle, tasks);
 			break;
 		default:
 			throw new AssertionError("Unknown algorithm!");
@@ -96,17 +104,20 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return plan;
 	}
 	
-	private Plan aStarPlan(Vehicle vehicle, TaskSet tasks){
+	private LinkedList<City> DFSroute(Vehicle vehicle, TaskSet tasks){
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
 		TaskSet remainingTasks = TaskSet.copyOf(tasks);
 		TaskSet currentTasks = vehicle.getCurrentTasks();
-		System.out.println("init # of tasks ="+remainingTasks.size());
+//		System.out.println("init # of tasks ="+remainingTasks.size());
 		
+		LinkedList<City> route = null;
 		
+		boolean isFull = isFull(currentTasks); 
+		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull, exceedFullCap); 
+		initNode.g = 0.0;
 		
-		boolean isFull = isFull(vehicle); 
-		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull); 
+		System.out.println("remains "+initNode.toStringRemainingTasks());
 		
 		LinkedList<State> Q = new LinkedList<State>();
 		LinkedList<State> C = new LinkedList<State>();
@@ -121,59 +132,51 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			remainingTasks = n.getRemainingTasks();
 //			if (vehicle.getCurrentCity().id != n.getCurrentCity().id){
 				
-			if(!initState){
-//				plan.appendMove(n.getCurrentCity());
-				System.out.println("move to node = "+n.getCurrentCity().name );
-			}else
-				initState = false;
-//			}
 			
-			System.out.println("remains "+n.toStringRemainingTasks());
-			System.out.println("to deliver "+n.toStringToDeliverTasks());
+//			System.out.println("remains "+n.toStringRemainingTasks());
+//			System.out.println("to deliver "+n.toStringToDeliverTasks());
 			
-			Task pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
+			// pickUp/dropOff all the tasks in the current city if any
 			Task dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
-			if (dropOff != null){
+			while (dropOff != null){
 //				plan.appendDelivery(dropOff);
 				currentTasks.remove(dropOff);
-				System.out.println("left to drop off =" + currentTasks.size());
+				dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
 			}
-			if (pickUp != null){
+			Task pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
+			while (pickUp != null && !isFull(currentTasks)){
 //				plan.appendPickup(pickUp);
 				remainingTasks.remove(pickUp);
 				currentTasks.add(pickUp);
-				System.out.println("left to pickup =" + remainingTasks.size());
-			}
-			if (n.isGoal()){
-				System.out.println("GOAL");
-				break;
-			}
-			StateList S = new StateList(); // the sorted list of successors
-			StateList Sprime = new StateList();
-			System.out.println("successors of "+n.getCurrentCity().name);
-			for (City neighbor : n.getCurrentCity().neighbors()){
-				State succ = new State(neighbor, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull);
-				if(!C.contains(succ)){
-					S.add(succ);
-					Sprime.add(succ);
-				}
-				
-				
-				//				System.out.println(succ.getCurrentCity().name+" "+succ.getHeuristic());
+				pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
 			}
 			
-			for (State suc: S.getList()){
-				System.out.println(suc.getCurrentCity().name +" remaing " + suc.toStringRemainingTasks());
-				System.out.println("to del " +suc.toStringToDeliverTasks());
+			// check if a goal's been reached
+			if (n.isGoal()){
+				System.out.println("GOAL");
+				System.out.println(n.route.toString());
+				System.out.println(n.routeLength);
+				route = n.route;
+				break;
 			}
-			int sizeS = Sprime.getList().size();
+			
+			// create the list of successors 
+			ArrayList<State> Sprime = new ArrayList<State>();
+			for (City neighbor : n.getCurrentCity().neighbors()){
+				State succ = new State(neighbor, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull(currentTasks), exceedFullCap);
+				succ.g = n.g + n.getCurrentCity().distanceTo(neighbor);
+				succ.addAllToRoute(n.route, n.routeLength);
+				succ.addToRoute(neighbor);
+				if(!C.contains(succ)){ // cycle detection 
+					Sprime.add(succ);
+				}
+			}
+			
+			int sizeS = Sprime.size();
 			for(int i=0; i<sizeS;i++){
-				State s = Sprime.getList().poll();
-//				System.out.println("i = "+i+" "+s.getCurrentCity().name+" "+s.getHeuristic());
-//				Q.addLast(s);
+				State s = Sprime.get(i);
 				Q.addFirst(s);
 			}
-//			Q.addAll(S.getList());
 			parent = n;
 			if(Q.isEmpty()){
 				System.out.println("exit because Q empty!");
@@ -181,12 +184,166 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		} while (!Q.isEmpty());
 		
 		
-		return naivePlan( vehicle,  tasks);
+		return route;
+	}
+	
+	private LinkedList<City> BFSroute(Vehicle vehicle, TaskSet tasks){
+		City current = vehicle.getCurrentCity();
+		Plan plan = new Plan(current);
+		TaskSet remainingTasks = TaskSet.copyOf(tasks);
+		TaskSet currentTasks = vehicle.getCurrentTasks();
+		
+		LinkedList<City> route = null;
+		
+		boolean isFull = isFull(currentTasks); 
+		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull, exceedFullCap); 
+		initNode.g = 0.0;
+		
+		LinkedList<State> Q = new LinkedList<State>();
+		LinkedList<State> C = new LinkedList<State>();
+		Q.add(initNode);
+		boolean initState = true;
+		State parent = null;
+		do {
+			State n = Q.removeFirst();
+			C.add(n);
+			
+			currentTasks = n.getToDeliver();
+			remainingTasks = n.getRemainingTasks();
+				
+			// pickUp/dropOff all the tasks in the current city if any
+			Task dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
+			while (dropOff != null){
+				currentTasks.remove(dropOff);
+				dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
+			}
+			Task pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
+			while (pickUp != null && !isFull(currentTasks)){
+				remainingTasks.remove(pickUp);
+				currentTasks.add(pickUp);
+				pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
+			}
+			
+			// check if a goal's been reached
+			if (n.isGoal()){
+				System.out.println("GOAL");
+				System.out.println(n.route.toString());
+
+				System.out.println(n.routeLength);
+				route = n.route;
+				break;
+			}
+			
+			// create the list of successors 
+			ArrayList<State> Sprime = new ArrayList<State>();
+			for (City neighbor : n.getCurrentCity().neighbors()){
+				State succ = new State(neighbor, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull(currentTasks), exceedFullCap);
+				succ.g = n.g + n.getCurrentCity().distanceTo(neighbor);
+//				succ.route.addAll(n.route);
+//				succ.route.add(neighbor);
+				succ.addAllToRoute(n.route, n.routeLength);
+				succ.addToRoute(neighbor);
+				if(!C.contains(succ)){ // cycle detection 
+					Sprime.add(succ);
+				}
+				//				System.out.println(succ.getCurrentCity().name+" "+succ.getHeuristic());
+			}
+			
+			Q.addAll(Sprime);
+			parent = n;
+			if(Q.isEmpty()){
+				System.out.println("exit because Q empty!");
+			}
+		} while (!Q.isEmpty());
+		
+		
+		return route;
+	}
+	
+	private LinkedList<City> AStarRoute(Vehicle vehicle, TaskSet tasks){
+		City current = vehicle.getCurrentCity();
+		Plan plan = new Plan(current);
+		TaskSet remainingTasks = TaskSet.copyOf(tasks);
+		TaskSet currentTasks = vehicle.getCurrentTasks();
+		
+		LinkedList<City> route = null;
+		
+		boolean isFull = isFull(currentTasks); 
+		State initNode = new State(current, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull, exceedFullCap); 
+		initNode.g = 0.0;
+		
+		StateList Q = new StateList();
+		LinkedList<State> C = new LinkedList<State>();
+		Q.add(initNode);
+		boolean initState = true;
+		State parent = null;
+		do {
+			State n = Q.removeFirst();
+			C.add(n);
+			
+			currentTasks = n.getToDeliver();
+			remainingTasks = n.getRemainingTasks();
+				
+//			if(!initState){
+//				System.out.println("move to node = "+n.getCurrentCity().name );
+//			}else
+//				initState = false;
+			
+//			System.out.println("remains "+n.toStringRemainingTasks());
+//			System.out.println("to deliver "+n.toStringToDeliverTasks());
+			
+			// pickUp/dropOff all the tasks in the current city if any
+			Task dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
+			while (dropOff != null){
+				currentTasks.remove(dropOff);
+//				System.out.println("left to drop off =" + currentTasks.size());
+				dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
+			}
+			Task pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
+			while (pickUp != null && !isFull(currentTasks)){
+				remainingTasks.remove(pickUp);
+				currentTasks.add(pickUp);
+//				System.out.println("left to pickup =" + remainingTasks.size());
+				pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
+			}
+			
+			// check if a goal's been reached
+			if (n.isGoal()){
+				System.out.println("GOAL");
+				System.out.println(n.route.toString());
+
+				System.out.println(n.routeLength);
+				route = n.route;
+				break;
+			}
+			
+			// create the list of successors 
+			ArrayList<State> Sprime = new ArrayList<State>();
+//			System.out.println("successors of "+n.getCurrentCity().name);
+			for (City neighbor : n.getCurrentCity().neighbors()){
+				State succ = new State(neighbor, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull(currentTasks), exceedFullCap);
+				succ.g = n.g + n.getCurrentCity().distanceTo(neighbor);
+				succ.addAllToRoute(n.route, n.routeLength);
+				succ.addToRoute(neighbor);
+				if(!C.contains(succ)){ // cycle detection 
+					Sprime.add(succ);
+				}
+				//				System.out.println(succ.getCurrentCity().name+" "+succ.getHeuristic());
+			}
+			
+			Q.addAll(Sprime);
+			parent = n;
+			if(Q.isEmpty()){
+				System.out.println("exit because Q empty!");
+			}
+		} while (!Q.isEmpty());
+		
+		
+		return route;
 	}
 	
 	private Task taskToPickUpInCity(TaskSet tasks, City city){
 		for (Task task : tasks){
-//			System.out.println("task in "+task.pickupCity);
 			if (city.id == task.pickupCity.id)
 				return task;
 		}
@@ -201,8 +358,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return null;
 	}
 	
-	private boolean isFull(Vehicle vehicle){
-		return  (capacity - vehicle.getCurrentTasks().weightSum())<3;//3 being the constant value of a task weight
+	private boolean isFull(TaskSet currentTasks){
+		return  (capacity - currentTasks.weightSum())<3;//3 being the constant value of a task weight
 	}
 
 	@Override

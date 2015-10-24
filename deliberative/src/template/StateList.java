@@ -14,8 +14,8 @@ public class StateList {
 		Comparator<State> StateHvalComparator 
 		= new Comparator<State>() {
 			public int compare(State s1, State s2) {
-//				return s2.compareTo(s1);
-				return s1.compareTo(s2);
+				return s2.compareTo(s1);
+//				return s1.compareTo(s2);
 			}
 
 		};
@@ -28,8 +28,8 @@ public class StateList {
 		Comparator<State> StateHvalComparator 
 		= new Comparator<State>() {
 			public int compare(State s1, State s2) {
-//				return s2.compareTo(s1);
-				return s1.compareTo(s2);
+				return s2.compareTo(s1);
+//				return s1.compareTo(s2);
 			}
 
 		};
@@ -43,6 +43,21 @@ public class StateList {
 	
 	public PriorityQueue<State> getList(){
 		return list;
+	}
+
+	public State removeFirst() {
+		// TODO Auto-generated method stub
+		return list.poll();
+	}
+
+	public boolean addAll(ArrayList<State> sprime) {
+		// TODO Auto-generated method stub
+		return list.addAll(sprime);
+	}
+
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return list.isEmpty();
 	}
 	
 	

@@ -1,5 +1,7 @@
 package template;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import logist.task.Task;
@@ -11,30 +13,47 @@ public class State implements Comparable<State>{
 //	public static enum ActionType {PICK, MOVE}
 	private final City mCurrentCity;
 	private TaskSet toDeliver ;
+	
+	private boolean isFull; // true if the vehicle has reached its capacity
+	private boolean exceedFull;
+	private double heuristic;
+	public double g;
+	
+	public LinkedList<City> route;
+	public double routeLength = 0.0;
+
 	public TaskSet getToDeliver() {
 		return toDeliver;
-	}
-
+	} 
 	private TaskSet remainingTasks;
 	public TaskSet getRemainingTasks() {
 		return remainingTasks;
 	}
-
-
-	private boolean isFull; // true if the vehicle has reached its capacity
-	private double heuristic;
-
-
-	public State(City currentCity, TaskSet remainingTasks,TaskSet toDeliver, boolean isFull) {
+	
+	public State(City currentCity, TaskSet remainingTasks,TaskSet toDeliver, boolean isFull,boolean exceedFullCap) {
 		mCurrentCity = currentCity;
 		this.remainingTasks = remainingTasks;
 		this.toDeliver = toDeliver;
 		this.isFull = isFull;
+		this.exceedFull = exceedFullCap;
 		heuristic = computeHval();
+		route = new LinkedList<City>();
 	}
 	
 	public void removeRemainingTask(Task t){
 		remainingTasks.remove(t);
+	}
+	
+	public void addToRoute(City city){
+		if (!route.isEmpty())
+			routeLength += route.getLast().distanceTo(city);
+		route.add(city);
+		
+	}
+	
+	public void addAllToRoute(Collection<City> cities,double l){
+		routeLength += l;
+		route.addAll(cities);
 	}
 	
 	public void upDateToDeliverTask(TaskSet t){
@@ -67,15 +86,26 @@ public class State implements Comparable<State>{
 		
 //		if (!remainingTasks.isEmpty()){
 			for (Task task: remainingTasks){
-				hVal += mCurrentCity.distanceTo(task.pickupCity); 
+				hVal += mCurrentCity.distanceTo(task.pickupCity);
 			}
 //		} else {
+			if (exceedFull){
 			for (Task task: toDeliver){
 				hVal += mCurrentCity.distanceTo(task.deliveryCity); 
 			}
+			}
+				
 //		}
 
 		return hVal;
+	}
+	
+	private boolean taskToPickUpInCity(){
+		for (Task task : remainingTasks){
+			if (mCurrentCity.id == task.pickupCity.id)
+				return true;
+		}
+		return false;
 	}
 	
 	public String toStringRemainingTasks(){
@@ -107,15 +137,22 @@ public class State implements Comparable<State>{
 		return "State : (" + mCurrentCity + "," + remainingTasks.size() + "tasks remaining, "+ ")"; 
 	}
 
+	/**
+	 * compare the states wrt their f(n) = g(n)+h(n) value
+	 */
 	@Override
 	public int compareTo(State s) {
-		double diff =  s.getHeuristic() - heuristic;
+		double diff =  s.f() - f();
 		if (diff < 0)
 			return -1;
 		else if  (diff > 0) 
 			return 1;
 		return 0;
 		
+	}
+	
+	public double f(){
+		return heuristic + g;
 	}
 	
 	@Override
