@@ -137,7 +137,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 				dropOff = taskToDropOffInCity(currentTasks,currentCity);
 			}
 			Task pickUp = taskToPickUpInCity(tasks,currentCity);
-			while (pickUp != null && !isFull(tasks)){
+			while (pickUp != null && !isFull(currentTasks)){
 				plan.appendPickup(pickUp);
 				tasks.remove(pickUp);
 				currentTasks.add(pickUp);
@@ -418,10 +418,9 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	@Override
 	public void planCancelled(TaskSet carriedTasks) {
 		
-		if (!carriedTasks.isEmpty()) {
-			// This cannot happen for this simple agent, but typically
-			// you will need to consider the carriedTasks when the next
-			// plan is computed.
-		}
+		/*No need to implement this as the planning always takes into account the 
+		 * agent's carried tasks 
+		 * 
+		 */
 	}
 }
