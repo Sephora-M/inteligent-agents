@@ -51,7 +51,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		// ...
 	}
 	
-	
 	@Override
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
@@ -105,11 +104,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 			// set current city
 			current = task.deliveryCity;
-			
-			 
 		}
 		System.out.println("Naive route cost = "+cost);
 		System.out.println("Planing Time = "+-(startingTime-System.currentTimeMillis()) +"ms");
+
 		return plan;
 	}
 	
@@ -146,11 +144,13 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 				pickUp = taskToPickUpInCity(tasks,currentCity);
 			}
 			
-		}  ;
+		}
+		
 		return plan;
 	}
 	
-	private LinkedList<City> DFSroute(Vehicle vehicle, TaskSet tasks){
+
+	private LinkedList<City> DFSroute(Vehicle vehicle, TaskSet tasks) {
 		long startingTime = System.currentTimeMillis();
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
@@ -232,7 +232,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			}
 		} while (!Q.isEmpty());
 		
-		
 		return route;
 	}
 	
@@ -308,7 +307,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			}
 		} while (!Q.isEmpty());
 		
-		
 		return route;
 	}
 	
@@ -353,6 +351,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 //				System.out.println("left to drop off =" + currentTasks.size());
 				dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
 			}
+			
 			Task pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
 			while (pickUp != null && !isFull(currentTasks)){
 				remainingTasks.remove(pickUp);
@@ -388,11 +387,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			
 			Q.addAll(Sprime);
 			parent = n;
-			if(Q.isEmpty()){
+			if (Q.isEmpty()) {
 				System.out.println("exit because Q empty!");
 			}
 		} while (!Q.isEmpty());
-		
 		
 		return route;
 	}
@@ -413,8 +411,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return null;
 	}
 	
-	private boolean isFull(TaskSet currentTasks){
-		return  (capacity - currentTasks.weightSum())<3;//3 being the constant value of a task weight
+	private boolean isFull(TaskSet currentTasks) {
+		return (capacity - currentTasks.weightSum()) < 3;//3 being the constant value of a task weight
 	}
 
 	@Override
