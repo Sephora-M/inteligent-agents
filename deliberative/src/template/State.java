@@ -84,29 +84,18 @@ public class State implements Comparable<State>{
 	private double computeHval(){
 		double hVal = 0.0;
 		
-//		if (!remainingTasks.isEmpty()){
+
 			for (Task task: remainingTasks) {
 				hVal += mCurrentCity.distanceTo(task.pickupCity);
 			}
-//		} else {
 			if (exceedFull) {
 				for (Task task: toDeliver) {
 					hVal += mCurrentCity.distanceTo(task.deliveryCity); 
 				}
 			}
-				
-//		}
 		return hVal;
 	}
 	
-	//TODO Need this??
-	private boolean taskToPickUpInCity(){
-		for (Task task : remainingTasks){
-			if (mCurrentCity.id == task.pickupCity.id)
-				return true;
-		}
-		return false;
-	}
 	
 	public String toStringRemainingTasks() {
 		String s = " ";

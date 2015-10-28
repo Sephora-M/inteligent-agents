@@ -1,6 +1,6 @@
 package template;
 
-/* import table */
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -156,7 +156,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		Plan plan = new Plan(current);
 		TaskSet remainingTasks = TaskSet.copyOf(tasks);
 		TaskSet currentTasks = vehicle.getCurrentTasks();
-//		System.out.println("init # of tasks ="+remainingTasks.size());
 		
 		LinkedList<City> route = null;
 		
@@ -178,22 +177,15 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			
 			currentTasks = n.getToDeliver();
 			remainingTasks = n.getRemainingTasks();
-//			if (vehicle.getCurrentCity().id != n.getCurrentCity().id){
-				
-			
-//			System.out.println("remains "+n.toStringRemainingTasks());
-//			System.out.println("to deliver "+n.toStringToDeliverTasks());
 			
 			// pickUp/dropOff all the tasks in the current city if any
 			Task dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
 			while (dropOff != null){
-//				plan.appendDelivery(dropOff);
 				currentTasks.remove(dropOff);
 				dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
 			}
 			Task pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
 			while (pickUp != null && !isFull(currentTasks)){
-//				plan.appendPickup(pickUp);
 				remainingTasks.remove(pickUp);
 				currentTasks.add(pickUp);
 				pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
@@ -290,14 +282,11 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			for (City neighbor : n.getCurrentCity().neighbors()){
 				State succ = new State(neighbor, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull(currentTasks), exceedFullCap);
 				succ.g = n.g + n.getCurrentCity().distanceTo(neighbor);
-//				succ.route.addAll(n.route);
-//				succ.route.add(neighbor);
 				succ.addAllToRoute(n.route, n.routeLength);
 				succ.addToRoute(neighbor);
 				if(!C.contains(succ)){ // cycle detection 
 					Sprime.add(succ);
 				}
-				//				System.out.println(succ.getCurrentCity().name+" "+succ.getHeuristic());
 			}
 			
 			Q.addAll(Sprime);
@@ -335,20 +324,11 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			
 			currentTasks = n.getToDeliver();
 			remainingTasks = n.getRemainingTasks();
-				
-//			if(!initState){
-//				System.out.println("move to node = "+n.getCurrentCity().name );
-//			}else
-//				initState = false;
-			
-//			System.out.println("remains "+n.toStringRemainingTasks());
-//			System.out.println("to deliver "+n.toStringToDeliverTasks());
 			
 			// pickUp/dropOff all the tasks in the current city if any
 			Task dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
 			while (dropOff != null){
 				currentTasks.remove(dropOff);
-//				System.out.println("left to drop off =" + currentTasks.size());
 				dropOff = taskToDropOffInCity(currentTasks,n.getCurrentCity());
 			}
 			
@@ -356,7 +336,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			while (pickUp != null && !isFull(currentTasks)){
 				remainingTasks.remove(pickUp);
 				currentTasks.add(pickUp);
-//				System.out.println("left to pickup =" + remainingTasks.size());
 				pickUp = taskToPickUpInCity(remainingTasks,n.getCurrentCity());
 			}
 			
@@ -373,7 +352,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			
 			// create the list of successors 
 			ArrayList<State> Sprime = new ArrayList<State>();
-//			System.out.println("successors of "+n.getCurrentCity().name);
 			for (City neighbor : n.getCurrentCity().neighbors()){
 				State succ = new State(neighbor, TaskSet.copyOf(remainingTasks), TaskSet.copyOf(currentTasks), isFull(currentTasks), exceedFullCap);
 				succ.g = n.g + n.getCurrentCity().distanceTo(neighbor);
@@ -382,7 +360,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 				if(!C.contains(succ)){ // cycle detection 
 					Sprime.add(succ);
 				}
-				//				System.out.println(succ.getCurrentCity().name+" "+succ.getHeuristic());
 			}
 			
 			Q.addAll(Sprime);
