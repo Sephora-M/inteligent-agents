@@ -12,7 +12,6 @@ public class StateList {
 		Comparator<State> StateHvalComparator = new Comparator<State>() {
 			public int compare(State s1, State s2) {
 				return s2.compareTo(s1);
-//				return s1.compareTo(s2);
 			}
 		};
 		
@@ -24,7 +23,6 @@ public class StateList {
 		Comparator<State> StateHvalComparator = new Comparator<State>() {
 			public int compare(State s1, State s2) {
 				return s2.compareTo(s1);
-//				return s1.compareTo(s2);
 			}
 		};
 		

@@ -70,7 +70,6 @@ public class State implements Comparable<State>{
 		return isFull;
 	}
 	
-	// TODO I'm not sure to understand that...
 	/*
 	 * The heuristic is the following:
 	 * If there's no task to pick up in the environment, set hVal to be the sum of the shortest paths
