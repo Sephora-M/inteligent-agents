@@ -82,20 +82,25 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	}
 	
 	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
+		long startingTime = System.currentTimeMillis();
+		
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
-
+		Double cost = 0.0;
 		for (Task task : tasks) {
 			// move: current city => pickup location
-			for (City city : current.pathTo(task.pickupCity))
+			for (City city : current.pathTo(task.pickupCity)){
 				plan.appendMove(city);
-
+			}
+			cost += current.distanceTo(task.pickupCity);
 			plan.appendPickup(task);
 
 			// move: pickup location => delivery location
-			for (City city : task.path())
+			for (City city : task.path()){
 				plan.appendMove(city);
-
+			}
+			cost += task.pathLength();
+			
 			plan.appendDelivery(task);
 
 			// set current city
@@ -103,6 +108,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			
 			 
 		}
+		System.out.println("Naive route cost = "+cost);
+		System.out.println("Planing Time = "+-(startingTime-System.currentTimeMillis()) +"ms");
 		return plan;
 	}
 	
@@ -144,6 +151,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	}
 	
 	private LinkedList<City> DFSroute(Vehicle vehicle, TaskSet tasks){
+		long startingTime = System.currentTimeMillis();
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
 		TaskSet remainingTasks = TaskSet.copyOf(tasks);
@@ -195,7 +203,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			if (n.isGoal()){
 				System.out.println("GOAL");
 				System.out.println(n.route.toString());
-				System.out.println(n.routeLength);
+				System.out.println("DFS route cost = "+n.routeLength);
+				System.out.println("Planing Time = "+-(startingTime-System.currentTimeMillis()) +"ms");
 				route = n.route;
 				break;
 			}
@@ -228,6 +237,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	}
 	
 	private LinkedList<City> BFSroute(Vehicle vehicle, TaskSet tasks){
+		long startingTime = System.currentTimeMillis();
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
 		TaskSet remainingTasks = TaskSet.copyOf(tasks);
@@ -270,7 +280,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 				System.out.println("GOAL");
 				System.out.println(n.route.toString());
 
-				System.out.println(n.routeLength);
+				System.out.println("BFS route cost "+n.routeLength);
+				System.out.println("Planing Time = "+-(startingTime-System.currentTimeMillis()) +"ms");
 				route = n.route;
 				break;
 			}
@@ -302,6 +313,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	}
 	
 	private LinkedList<City> AStarRoute(Vehicle vehicle, TaskSet tasks){
+		long startingTime = System.currentTimeMillis();
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
 		TaskSet remainingTasks = TaskSet.copyOf(tasks);
@@ -354,7 +366,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 				System.out.println("GOAL");
 				System.out.println(n.route.toString());
 
-				System.out.println(n.routeLength);
+				System.out.println("A* route cost " +n.routeLength);
+				System.out.println("Planing Time = "+ -(startingTime-System.currentTimeMillis()) +"ms");
 				route = n.route;
 				break;
 			}
