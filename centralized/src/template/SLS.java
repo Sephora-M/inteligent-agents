@@ -10,21 +10,41 @@ import logist.task.TaskSet;
 
 public class SLS {
 	
-	private List<Vehicle> mVehicles;
+	private static Action[] nextTask;
+    private static Object[] nextTaskDomain;
+    private List<Vehicle> mVehicles;
 	private TaskSet mTasks;
 	private List<VehiclePlan> mVehiclesPlans;
 	private int nT;
 	private int nV;
 	
-	public SLS(List<Vehicle> vehicles, TaskSet tasks, int _nT, int _nV) {
+	public SLS(List<Vehicle> vehicles, TaskSet tasks) {
 		mVehicles = vehicles; // Deep copy necessary?
 		mTasks = TaskSet.copyOf(tasks);
 		mVehiclesPlans = new ArrayList<VehiclePlan>();
-		nT = _nT;
-		nV = _nV;
+		nT = tasks.size() * 2;  // Number of tasks (pickup and delivery => *2)
+        nV = vehicles.size();  // Number of vehicles.
+        nextTask = new Action[nT + nV];
+        nextTaskDomain = new Object[nT + nV];
+        
+        int i = 0;
+        for (Task task : tasks) {
+        	nextTaskDomain[i] = new Action(ActionType.PICKUP, task);
+        	nextTaskDomain[i+1] = new Action(ActionType.DELIVERY, task);
+        	i = i + 2;
+        }
+        
+        for (Vehicle v : vehicles) {
+        	nextTaskDomain[i] = v;
+        	i++;
+        }
 	}
 	
-	public void selectInitialSolution() {
+	public void stochLocalSearch() {
+		selectInitialSolution();
+	}
+	
+	private void selectInitialSolution() {
 		// Find the biggest vehicle.
 		Vehicle biggestVehicle = mVehicles.get(0);
 		int biggestVehicleIndex = 0;
@@ -39,21 +59,72 @@ public class SLS {
 		
 		// Give all the tasks to that vehicle.
 		VehiclePlan vehiclePlan = mVehiclesPlans.get(biggestVehicleIndex);
+		int time = 1;
 		for (Task task : mTasks) {
-			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.PICKUP, task));
-			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.DELIVERY, task));
+			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.PICKUP, task, biggestVehicle, time));
+			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.DELIVERY, task, biggestVehicle, time+1));
+			time = time + 2;
 		}
 		
-		CentralizedTemplate.nextTask[nT + biggestVehicleIndex] = (Action) CentralizedTemplate.nextTaskDomain[0];
+		nextTask[nT + biggestVehicleIndex] = (Action) nextTaskDomain[0];
+		nextTask[nT + biggestVehicleIndex].setVehicle(biggestVehicle);
+		nextTask[nT + biggestVehicleIndex].setTime(1);
 		
 		for (int i = 1; i < nT-1; i++) {
-			CentralizedTemplate.nextTask[i-1] = (Action) CentralizedTemplate.nextTaskDomain[i];
+			nextTask[i-1] = (Action) nextTaskDomain[i];
+			nextTask[i-1].setVehicle(biggestVehicle);
+			nextTask[i-1].setTime(i+1);
 		}
-		CentralizedTemplate.nextTask[nT-1] = null;
+		nextTask[nT-1] = null;
 	}
 	
-	public void stochLocalSearch() {
-		selectInitialSolution();
+	private boolean checkConstraint() {
+		return checkConstraint1() && checkConstraint2() && checkConstraint3() && checkConstraint4()
+				&& checkConstraint5() && checkConstraint6() && checkConstraint7() && checkConstraint8();
+	}
+	
+	private boolean checkConstraint1() {
+		for (int i = 0; i < nT; i++) {
+			if (nextTask[i] == nextTaskDomain[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean checkConstraint2() {
+		for (int i = nT; i < nextTask.length; i++) {
+			if (nextTask[i] != null) {
+				if (nextTask[i].getTime() != 1) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private boolean checkConstraint3() {
+		return false;
+	}
+	
+	private boolean checkConstraint4() {
+		return false;
+	}
+	
+	private boolean checkConstraint5() {
+		return false;
+	}
+	
+	private boolean checkConstraint6() {
+		return false;
+	}
+	
+	private boolean checkConstraint7() {
+		return false;
+	}
+	
+	private boolean checkConstraint8() {
+		return false;
 	}
 
 }
