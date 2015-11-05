@@ -4,8 +4,9 @@ package template;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import logist.LogistSettings;
 
+import template.Action.ActionType;
+import logist.LogistSettings;
 import logist.Measures;
 import logist.behavior.AuctionBehavior;
 import logist.behavior.CentralizedBehavior;
@@ -33,6 +34,9 @@ public class CentralizedTemplate implements CentralizedBehavior {
     private long timeout_setup;
     private long timeout_plan;
     
+    public static Action[] nextTask;
+    public static Object[] nextTaskDomain;
+    
     @Override
     public void setup(Topology topology, TaskDistribution distribution,
             Agent agent) {
@@ -40,7 +44,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
         // this code is used to get the timeouts
         LogistSettings ls = null;
         try {
-            ls = Parsers.parseSettings("config\\settings_default.xml");
+            ls = Parsers.parseSettings("config/settings_default.xml");
         }
         catch (Exception exc) {
             System.out.println("There was a problem loading the configuration file.");
@@ -61,7 +65,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
         long time_start = System.currentTimeMillis();
         
 //		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-        Plan planVehicle1 = naivePlan(vehicles.get(0), tasks);
+        /*Plan planVehicle1 = naivePlan(vehicles.get(0), tasks);
 
         List<Plan> plans = new ArrayList<Plan>();
         plans.add(planVehicle1);
@@ -72,6 +76,30 @@ public class CentralizedTemplate implements CentralizedBehavior {
         long time_end = System.currentTimeMillis();
         long duration = time_end - time_start;
         System.out.println("The plan was generated in "+duration+" milliseconds.");
+        
+        return plans;*/
+        
+        int nT = tasks.size() * 2;  // Number of tasks (pickup and delivery => *2)
+        int nV = vehicles.size();  // Number of vehicles.
+        nextTask = new Action[nT + nV];
+        nextTaskDomain = new Object[nT + nV];
+        
+        int i = 0;
+        for (Task task : tasks) {
+        	nextTaskDomain[i] = new Action(ActionType.PICKUP, task);
+        	nextTaskDomain[i+1] = new Action(ActionType.DELIVERY, task);
+        	i = i + 2;
+        }
+        
+        for (Vehicle v : vehicles) {
+        	nextTaskDomain[i] = v;
+        	i++;
+        }
+        
+        SLS solver = new SLS(vehicles, tasks, nT, nV);
+        solver.stochLocalSearch();
+        
+        List<Plan> plans = new ArrayList<Plan>();
         
         return plans;
     }
