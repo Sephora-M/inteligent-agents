@@ -50,8 +50,24 @@ public class Action {
 	
 	@Override
 	public boolean equals(Object obj) {
-		// TODO Implement!!
-		return false;
+		if (this == obj) {
+			return true;
+		} else if (obj == null || obj.getClass() != getClass()) {
+			return false;
+		} else {
+			Action a = (Action) obj;
+			if ((mActionType != a.mActionType) || (mTask != a.mTask)) {
+				return false;
+			} else {
+				return true;
+			}
+		}
 	}
+	
+	@Override
+    public int hashCode() {
+        int result = mActionType == ActionType.DELIVERY ? 1 : 0;
+        return 31 * result + mTask.hashCode();
+    }
 	
 }
