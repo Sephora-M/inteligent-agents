@@ -203,6 +203,8 @@ public class SLS {
 		return true;
 	}
 
+	// Checks that each vehicle actions "list" contains at most one pickUp and delivery actions for each task.
+	// Furthermore, for each task, the pickUp action has to be present in the actions "list" before the delivery.
 	private boolean checkConstraint8() {
 		// For each vehicle, 
 		for (int i = nT; i < nextTask.length; i++) {
@@ -216,6 +218,12 @@ public class SLS {
 				int currentValue = checkSum[taskIndex]; // Current value of the checkSum array for that task
 				// If we have a pickup action, we increment that value, otherwise we decrement it
 				checkSum[taskIndex] = (action.getType() == ActionType.PICKUP) ? currentValue+1 : currentValue-1;
+				// If that value is less than 0, it means we have a delivery action before pickUp action for the current task.
+				// If that value is more than 1, it means we have two times a pickUp action for the same task.
+				if (checkSum[taskIndex] < 0 || checkSum[taskIndex] > 1) {
+					// so, for both cases, we return false as this is not possible!
+					return false;
+				}
 				// We go to the next action.
 				action = nextTask[action.getActionIndex()];
 			}
