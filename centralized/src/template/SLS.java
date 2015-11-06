@@ -45,7 +45,6 @@ public class SLS {
 
 	public void stochLocalSearch() {
 		selectInitialSolution();
-		System.out.println(checkConstraint());
 	}
 
 	private void selectInitialSolution() {
@@ -85,7 +84,7 @@ public class SLS {
 	private boolean checkConstraint() {
 		return checkConstraint1() && checkConstraint2() && checkConstraint3()
 				&& checkConstraint4() && checkConstraint5() && checkConstraint6()
-				&& checkConstraint7() && checkConstraint8() && checkConstraint9();
+				&& checkConstraint7();
 	}
 
 	// nextTask(t) = t: the task delivered after some task t cannot be the same task
@@ -197,24 +196,25 @@ public class SLS {
 		return true;
 	}
 
-	// the capacity of a vehicle cannot be exceeded: if load(ti) > capacity(vk) ⇒ vehicle(ti) != vk
-	private boolean checkConstraint7() {
-		// TODO
-		return true;
-	}
-
 	// Checks that each vehicle actions "list" contains at most one pickUp and delivery actions for each task.
 	// Furthermore, for each task, the pickUp action has to be present in the actions "list" before the delivery.
-	private boolean checkConstraint8() {
+	// It also checks that for each vehicle, at any time, the sum of the carried tasks is not bigger than the capacity.
+	// The capacity of a vehicle cannot be exceeded: if load(ti) > capacity(vk) ⇒ vehicle(ti) != vk
+	private boolean checkConstraint7() {
 		// For each vehicle, 
 		for (int i = nT; i < nextTask.length; i++) {
-			// we have an array of size the number of tasks (initialized at 0 everywhere).
+			// we fetch the vehicle capacity.
+			Vehicle v = (Vehicle) nextTaskDomain[i];
+			int vehicleCapacity = v.capacity();
+			int vehicleCurrentLoad = 0;
+			// We create an array of size the number of tasks (initialized at 0 everywhere).
 			int[] checkSum = new int[mNumberOfTasks];
 			// We look at all the actions of the vehicle starting with the first one,
 			Action action = nextTask[i];
 			// until we find a "null" action meaning we saw all the actions of that vehicle.
 			while (action != null) {
-				int taskIndex = action.getTask().id; // Index of the task (from 0 to numberOfTasks)
+				Task vehicleTask = action.getTask();
+				int taskIndex = vehicleTask.id; // Index of the task (from 0 to numberOfTasks)
 				int currentValue = checkSum[taskIndex]; // Current value of the checkSum array for that task
 				// If we have a pickup action, we increment that value, otherwise we decrement it
 				checkSum[taskIndex] = (action.getType() == ActionType.PICKUP) ? currentValue+1 : currentValue-1;
@@ -222,6 +222,17 @@ public class SLS {
 				// If that value is more than 1, it means we have two times a pickUp action for the same task.
 				if (checkSum[taskIndex] < 0 || checkSum[taskIndex] > 1) {
 					// so, for both cases, we return false as this is not possible!
+					return false;
+				}
+				
+				// Add or remove the task weight from the vehicle current load.
+				if (action.getType() == ActionType.PICKUP) {
+					vehicleCurrentLoad += vehicleTask.weight;
+				} else {
+					vehicleCurrentLoad -= vehicleTask.weight;
+				}
+				// Check that the vehicle capacity is not violated.
+				if (vehicleCurrentLoad > vehicleCapacity) {
 					return false;
 				}
 				// We go to the next action.
@@ -236,10 +247,4 @@ public class SLS {
 		}
 		return true;
 	}
-
-	private boolean checkConstraint9() {
-		// TODO
-		return true;
-	}
-
 }
