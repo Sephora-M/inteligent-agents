@@ -1,6 +1,5 @@
 package template;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,23 +15,25 @@ public class SLS {
 	private static Object[] nextTaskDomain;
 	private List<Vehicle> mVehicles;
 	private TaskSet mTasks;
-	private List<VehiclePlan> mVehiclesPlans;
+	//private List<VehiclePlan> mVehiclesPlans;
 	private int nT;
 	private int nV;
+	private int mNumberOfTasks;
 
 	public SLS(List<Vehicle> vehicles, TaskSet tasks) {
 		mVehicles = vehicles; // Deep copy necessary?
 		mTasks = TaskSet.copyOf(tasks);
-		mVehiclesPlans = new ArrayList<VehiclePlan>();
-		nT = tasks.size() * 2;  // Number of tasks (pickup and delivery => *2)
+		//mVehiclesPlans = new ArrayList<VehiclePlan>();
+		mNumberOfTasks = tasks.size();
+		nT = mNumberOfTasks * 2;  // Number of tasks (pickup and delivery => *2)
 		nV = vehicles.size();  // Number of vehicles.
 		nextTask = new Action[nT + nV];
 		nextTaskDomain = new Object[nT + nV];
 
 		int i = 0;
 		for (Task task : tasks) {
-			nextTaskDomain[i] = new Action(ActionType.PICKUP, task);
-			nextTaskDomain[i+1] = new Action(ActionType.DELIVERY, task);
+			nextTaskDomain[i] = new Action(ActionType.PICKUP, task, i);
+			nextTaskDomain[i+1] = new Action(ActionType.DELIVERY, task, i+1);
 			i = i + 2;
 		}
 
@@ -44,46 +45,36 @@ public class SLS {
 
 	public void stochLocalSearch() {
 		selectInitialSolution();
-		
-		// TODO Remove
-		System.out.println("1 => " + checkConstraint1());
-		System.out.println("2 => " + checkConstraint2());
-		System.out.println("3 => " + checkConstraint3());
-		System.out.println("4 => " + checkConstraint4());
-		System.out.println("5 => " + checkConstraint5());
-		System.out.println("6 => " + checkConstraint6());
-		System.out.println("7 => " + checkConstraint7());
-		System.out.println("8 => " + checkConstraint8());
-		System.out.println("9 => " + checkConstraint9());
+		System.out.println(checkConstraint());
 	}
 
 	private void selectInitialSolution() {
 		// Find the biggest vehicle.
 		Vehicle biggestVehicle = mVehicles.get(0);
-		int biggestVehicleIndex = 0;
+		int biggestVehicleIndexOffset = 0;
 		for (int i = 1; i < mVehicles.size(); i++) {
 			Vehicle v = mVehicles.get(i);
-			mVehiclesPlans.add(new VehiclePlan(v, null));
+			//mVehiclesPlans.add(new VehiclePlan(v, null));
 			if (v.capacity() > biggestVehicle.capacity()) {
 				biggestVehicle = v;
-				biggestVehicleIndex = i;
+				biggestVehicleIndexOffset = i;
 			}
 		}
-
-		// Give all the tasks to that vehicle.
-		VehiclePlan vehiclePlan = mVehiclesPlans.get(biggestVehicleIndex);
+		
+		/*VehiclePlan vehiclePlan = mVehiclesPlans.get(biggestVehicleIndex);
 		int time = 1;
 		for (Task task : mTasks) {
 			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.PICKUP, task, biggestVehicle, time));
 			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.DELIVERY, task, biggestVehicle, time+1));
 			time = time + 2;
-		}
+		}*/
 
-		nextTask[nT + biggestVehicleIndex] = (Action) nextTaskDomain[0];
-		nextTask[nT + biggestVehicleIndex].setVehicle(biggestVehicle);
-		nextTask[nT + biggestVehicleIndex].setTime(1);
+		// Give all the tasks to that vehicle.
+		nextTask[nT + biggestVehicleIndexOffset] = (Action) nextTaskDomain[0];
+		nextTask[nT + biggestVehicleIndexOffset].setVehicle(biggestVehicle);
+		nextTask[nT + biggestVehicleIndexOffset].setTime(1);
 
-		for (int i = 1; i < nT-1; i++) {
+		for (int i = 1; i < nT; i++) {
 			nextTask[i-1] = (Action) nextTaskDomain[i];
 			nextTask[i-1].setVehicle(biggestVehicle);
 			nextTask[i-1].setTime(i+1);
@@ -159,20 +150,35 @@ public class SLS {
 	// nextTask array must be equal to the set of tasks T plus NV times the value NULL.
 	private boolean checkConstraint6() {
 		int nullCounter = 0;
-		Set<Action> notNullActions = new HashSet<Action>();
+		Set<Task> notNullPickUpTasks = new HashSet<Task>();
+		Set<Task> notNullDeliveryTasks = new HashSet<Task>();
 		for (int i = 0; i < nextTask.length; i++) {
-			Action task = nextTask[i];
-			if (task == null) {
+			Action taskAction = nextTask[i];
+			if (taskAction == null) {
 				nullCounter++;
 			} else {
-				notNullActions.add(task);
+				Task task = taskAction.getTask();
+				if (taskAction.getType() == ActionType.PICKUP) {
+					if (!notNullPickUpTasks.contains(task)) {
+						notNullPickUpTasks.add(task);
+					} else {
+						// Means this task exists at least two times in "nextTask".
+						return false;
+					}
+				} else if (!notNullDeliveryTasks.contains(task)) {
+					notNullDeliveryTasks.add(task);
+				} else {
+					// Means this task exists at least two times in "nextTask".
+					return false;
+				}
 			}
 		}
 		if (nullCounter != nV) {
+			System.out.println("null counter:" + nullCounter + " vs nV:" + nV);
 			return false;
 		} else {
 			for (Task t : mTasks) {
-				if (!notNullActions.contains(t)) {
+				if (!notNullPickUpTasks.contains(t) || !notNullDeliveryTasks.contains(t)) {
 					return false;
 				}
 			}
@@ -187,7 +193,28 @@ public class SLS {
 	}
 
 	private boolean checkConstraint8() {
-		// TODO
+		// For each vehicle, 
+		for (int i = nT; i < nextTask.length; i++) {
+			// we have an array of size the number of tasks (initialized at 0 everywhere).
+			int[] checkSum = new int[mNumberOfTasks];
+			// We look at all the actions of the vehicle starting with the first one,
+			Action action = nextTask[i];
+			// until we find a "null" action meaning we saw all the actions of that vehicle.
+			while (action != null) {
+				int taskIndex = action.getTask().id; // Index of the task (from 0 to numberOfTasks)
+				int currentValue = checkSum[taskIndex]; // Current value of the checkSum array for that task
+				// If we have a pickup action, we increment that value, otherwise we decrement it
+				checkSum[taskIndex] = (action.getType() == ActionType.PICKUP) ? currentValue+1 : currentValue-1;
+				// We go to the next action.
+				action = nextTask[action.getActionIndex()];
+			}
+			// Finally, we test that each value of the checkSum array is equal to 0 (means same number of pickUp and delivery).
+			for (int sum : checkSum) {
+				if (sum != 0) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 

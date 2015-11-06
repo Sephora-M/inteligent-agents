@@ -11,17 +11,20 @@ public class Action {
 	private Task mTask;
 	private Vehicle mVehicle;
 	private int mTime;
+	private int mActionIndex;
 
-	public Action(ActionType actionType, Task task, Vehicle vehicle, int time) {
+	public Action(ActionType actionType, Task task, Vehicle vehicle, int time, int actionIndex) {
 		mActionType = actionType;
 		mTask = task;
 		mVehicle = vehicle;
 		mTime = time;
+		mActionIndex = actionIndex;
 	}
 	
-	public Action(ActionType actionType, Task task) {
+	public Action(ActionType actionType, Task task, int actionIndex) {
 		mActionType = actionType;
 		mTask = task;
+		mActionIndex = actionIndex;
 	}
 	
 	public ActionType getType() {
@@ -48,6 +51,14 @@ public class Action {
 		return mTime;
 	}
 	
+	public int getActionIndex() {
+		return mActionIndex;
+	}
+	
+	public void setActionIndex(int actionIndex) {
+		mActionIndex = actionIndex;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -69,5 +80,10 @@ public class Action {
         int result = mActionType == ActionType.DELIVERY ? 1 : 0;
         return 31 * result + mTask.hashCode();
     }
+	
+	@Override
+	public String toString() {
+		return mActionType.toString() + " at time " + mTime + " of " + mTask + " by the vehicle " + mVehicle;
+	}
 	
 }
