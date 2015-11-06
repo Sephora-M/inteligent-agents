@@ -149,33 +149,44 @@ public class SLS {
 	// all tasks must be delivered: the set of values of the variables in the
 	// nextTask array must be equal to the set of tasks T plus NV times the value NULL.
 	private boolean checkConstraint6() {
-		int nullCounter = 0;
+		int nullCounter = 0; // Counts the number of null actions. At the end, must be equal to nV.
 		Set<Task> notNullPickUpTasks = new HashSet<Task>();
 		Set<Task> notNullDeliveryTasks = new HashSet<Task>();
+		
+		// For each action,
 		for (int i = 0; i < nextTask.length; i++) {
 			Action taskAction = nextTask[i];
+			// if it is null, we increment the null counter,
 			if (taskAction == null) {
 				nullCounter++;
+			// otherwise, we add it in the corresponding (based on its type) set.
 			} else {
 				Task task = taskAction.getTask();
 				if (taskAction.getType() == ActionType.PICKUP) {
-					if (!notNullPickUpTasks.contains(task)) {
+					// If the action is of "PickUp" type and does not already exist in the
+					// PickUp actions set, we add it in this set,
+ 					if (!notNullPickUpTasks.contains(task)) {
 						notNullPickUpTasks.add(task);
+					// otherwise, we return false,
+					// because it means this task exists at least two times in "nextTask".
 					} else {
-						// Means this task exists at least two times in "nextTask".
 						return false;
 					}
+ 				// If the action is of "Delivery" type and does not already exist in the
+				// Delivery actions set, we add it in this set,
 				} else if (!notNullDeliveryTasks.contains(task)) {
 					notNullDeliveryTasks.add(task);
+				// otherwise, we return false,
+				// because it means this task exists at least two times in "nextTask".
 				} else {
-					// Means this task exists at least two times in "nextTask".
 					return false;
 				}
 			}
 		}
+		// We must have "nV" null elements in "nextTask". If this is not the case, we return false,
 		if (nullCounter != nV) {
-			System.out.println("null counter:" + nullCounter + " vs nV:" + nV);
 			return false;
+		// otherwise, we check that each task is contained in the "pickUp" or in the "delivery" set.
 		} else {
 			for (Task t : mTasks) {
 				if (!notNullPickUpTasks.contains(t) || !notNullDeliveryTasks.contains(t)) {
