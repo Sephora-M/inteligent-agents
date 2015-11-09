@@ -1,5 +1,6 @@
 package template;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -8,9 +9,13 @@ import template.Action.ActionType;
 import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskSet;
+import logist.topology.Topology.City;
+import logist.plan.Plan;
 
 public class SLS {
-
+	
+	private final static int MAX_ITER = 1000;
+	private final double prob = 0.3;
 	private static Action[] nextTask;
 	private static Object[] nextTaskDomain;
 	private List<Vehicle> mVehicles;
@@ -19,6 +24,7 @@ public class SLS {
 	private int nT;
 	private int nV;
 	private int mNumberOfTasks;
+	
 
 	public SLS(List<Vehicle> vehicles, TaskSet tasks) {
 		mVehicles = vehicles; // Deep copy necessary?
@@ -32,8 +38,12 @@ public class SLS {
 
 		int i = 0;
 		for (Task task : tasks) {
-			nextTaskDomain[i] = new Action(ActionType.PICKUP, task, i);
-			nextTaskDomain[i+1] = new Action(ActionType.DELIVERY, task, i+1);
+			Action pickUp = new Action(ActionType.PICKUP, task, i);
+			Action dropOff =  new Action(ActionType.DELIVERY, task, i+1);
+			pickUp.setComplement(dropOff);
+			dropOff.setComplement(pickUp);
+			nextTaskDomain[i] = pickUp;
+			nextTaskDomain[i+1] = dropOff;
 			i = i + 2;
 		}
 
@@ -45,6 +55,138 @@ public class SLS {
 
 	public void stochLocalSearch() {
 		selectInitialSolution();
+		nextTask = changingVehicle(mVehicles.get(0), mVehicles.get(1));
+		nextTask = changingVehicle(mVehicles.get(0), mVehicles.get(2));
+		Action[] newNextTask;
+//		int i =3;
+//		do{
+		newNextTask = changingTaskOrder(mVehicles.get(0), 2,3);
+//			i++;
+//		}while (!checkConstraints(newNextTask) || i>nT);
+		nextTask = newNextTask;
+//		Action[] A = nextTask;
+//		for (int iteration = 0; iteration < MAX_ITER; iteration++){
+//			Action[] Aold = nextTask;
+//			List<Action[] > neighbors = chooseNeighbors();
+//			localChoice(neighbors);			
+//		}
+	}
+	
+	
+	private List<Action[] > chooseNeighbors(){
+		//TODO: given the current solution (given by nextTask), returns a subset of "close enough" solutions
+		return null;	
+	}
+	/**
+	 * Takes a task (pickup and deliver actions) from v1 and give it to v2
+	 * @param v1
+	 * @param v2
+	 * @return
+	 */
+	private Action[] changingVehicle(Vehicle v1, Vehicle v2){
+		if (nextTask[vehicleIndex(v1)] == null)
+			return null;
+		
+		Action[] A1 = nextTask;
+		Action t1 = A1[vehicleIndex(v1)];
+		Action t2 = t1.getComplement();
+		Action nextV1= A1[t1.getActionIndex()];
+		// check that the next action of v1 isn't complement of the action we are giving to v2
+		while (nextV1.equals(t2)){
+			nextV1 = A1[nextV1.getActionIndex()];
+		}
+		
+		A1[vehicleIndex(v1)] = nextV1;
+		A1[t1.getActionIndex()] = t2;
+		A1[t2.getActionIndex()] = A1[vehicleIndex(v2)];
+		A1[vehicleIndex(v2)]=t1;
+		
+		Action actionV1 =  A1[vehicleIndex(v1)];
+		int time =1;
+		while (actionV1 != null){
+			actionV1.setTime(time);
+			time++;
+			actionV1 = A1[actionV1.getActionIndex()];
+		}
+		time = 1;
+		Action actionV2 =  A1[vehicleIndex(v2)];
+		while (actionV2 != null){
+			actionV2.setTime(time);
+			time++;
+			actionV2 = A1[actionV2.getActionIndex()];
+		}
+		return A1;
+	}
+	
+	private Action[] changingTaskOrder(Vehicle v, int idxA1, int idxA2){
+		if (nextTask[vehicleIndex(v)] == null)
+			return null;
+		
+		Action[] A1 = nextTask;
+		Action next = A1[vehicleIndex(v)];
+		Action first = null;
+		Action second = null;
+		while (next != null){
+			if (next.getTime() == idxA1){
+				first = next;
+			}
+			else if  (next.getTime() == idxA2){
+				second = next;
+			}
+			next = A1[next.getActionIndex()];
+		}
+		
+		if (first == null || second == null) return null; // degenerate case where idxA1 or idxA2 are not valid times
+		
+		Action prevFirst = null;
+		for (int i=0; i<A1.length;i++){
+			if (A1[i] != null && A1[i].equals(first)){
+				if(nextTaskDomain[i] instanceof Action)
+					prevFirst = (Action) nextTaskDomain[i];
+				break;
+			}
+		}
+		
+		Action prevSecond = null;
+		for (int i=0; i<A1.length;i++){
+			if (A1[i] != null && A1[i].equals(second)){
+				if(nextTaskDomain[i] instanceof Action)
+					prevSecond = (Action) nextTaskDomain[i];
+				break;
+			}
+		}
+		
+		Action nextFirst = A1[first.getActionIndex()];
+		
+		Action nextSecond = A1[second.getActionIndex()];
+		
+		if (nextFirst.equals(second)){
+			if(prevFirst !=null)
+				A1[prevFirst.getActionIndex()] = second;
+			else A1[vehicleIndex(v)] = second;
+			A1[second.getActionIndex()] = first;
+			A1[first.getActionIndex()] = nextSecond;
+		}
+		else {
+			if(prevFirst !=null)
+				A1[prevFirst.getActionIndex()] = second;
+			else A1[vehicleIndex(v)] = second;
+			A1[second.getActionIndex()] = nextFirst;
+			A1[prevSecond.getActionIndex()] = first;
+			A1[first.getActionIndex()] = nextSecond;
+			int time = 1;
+			Action actionV =  A1[vehicleIndex(v)];
+			while (actionV != null){
+				actionV.setTime(time);
+				time++;
+				actionV = A1[actionV.getActionIndex()];
+			}
+		}
+		return A1;
+		
+	}
+	private void localChoice(List<Action[] > neighbors){
+		//TODO : select a better solution in neighbors with probability p
 	}
 
 	private void selectInitialSolution() {
@@ -79,18 +221,20 @@ public class SLS {
 			nextTask[i-1].setTime(i+1);
 		}
 		nextTask[nT-1] = null;
+		System.out.println("selected init sol");
 	}
 
-	private boolean checkConstraint() {
-		return checkConstraint1() && checkConstraint2() && checkConstraint3()
-				&& checkConstraint4() && checkConstraint5() && checkConstraint6()
-				&& checkConstraint7();
+	private boolean checkConstraints(Action[] solution) {
+		if (solution==null) return false;
+		return checkConstraint1(solution) && checkConstraint2(solution) && checkConstraint3(solution)
+				&& checkConstraint4(solution) && checkConstraint5(solution) && checkConstraint6(solution)
+				&& checkConstraint7(solution);
 	}
 
 	// nextTask(t) = t: the task delivered after some task t cannot be the same task
-	private boolean checkConstraint1() {
+	private boolean checkConstraint1(Action[] solution) {
 		for (int i = 0; i < nT; i++) {
-			if (nextTask[i] == nextTaskDomain[i]) {
+			if (solution[i] == nextTaskDomain[i]) {
 				return false;
 			}
 		}
@@ -98,10 +242,10 @@ public class SLS {
 	}
 
 	// nextTask(vk) = tj ⇒ time(tj) = 1
-	private boolean checkConstraint2() {
-		for (int i = nT; i < nextTask.length; i++) {
-			if (nextTask[i] != null) {
-				if (nextTask[i].getTime() != 1) {
+	private boolean checkConstraint2(Action[] solution) {
+		for (int i = nT; i < solution.length; i++) {
+			if (solution[i] != null) {
+				if (solution[i].getTime() != 1) {
 					return false;
 				}
 			}
@@ -110,10 +254,10 @@ public class SLS {
 	}
 
 	// nextTask(ti) = tj ⇒ time(tj) = time(ti) + 1
-	private boolean checkConstraint3() {
+	private boolean checkConstraint3(Action[] solution) {
 		for (int i = 0; i < nT; i++) {
-			if (nextTask[i] != null && nextTaskDomain[i] != null) {
-				if (nextTask[i].getTime() != (((Action) nextTaskDomain[i]).getTime() + 1)) {
+			if (solution[i] != null && nextTaskDomain[i] != null) {
+				if (solution[i].getTime() != (((Action) nextTaskDomain[i]).getTime() + 1)) {
 					return false;
 				}
 			}
@@ -122,10 +266,10 @@ public class SLS {
 	}
 
 	// nextTask(vk) = tj ⇒ vehicle(tj) = vk
-	private boolean checkConstraint4() {
-		for (int i = nT; i < nextTask.length; i++) {
-			if (nextTask[i] != null) {
-				if (nextTask[i].getVehicle() != ((Vehicle) nextTaskDomain[i])) {
+	private boolean checkConstraint4(Action[] solution) {
+		for (int i = nT; i < solution.length; i++) {
+			if (solution[i] != null) {
+				if (solution[i].getVehicle() != ((Vehicle) nextTaskDomain[i])) {
 					return false;
 				}
 			}
@@ -134,10 +278,10 @@ public class SLS {
 	}
 
 	// nextTask(ti) = tj ⇒ vehicle(tj) = vehicle(ti)
-	private boolean checkConstraint5() {
+	private boolean checkConstraint5(Action[] solution) {
 		for (int i = 0; i < nT; i++) {
-			if (nextTask[i] != null && nextTaskDomain[i] != null) {
-				if (nextTask[i].getVehicle() != ((Action) nextTaskDomain[i]).getVehicle()) {
+			if (solution[i] != null && nextTaskDomain[i] != null) {
+				if (solution[i].getVehicle() != ((Action) nextTaskDomain[i]).getVehicle()) {
 					return false;
 				}
 			}
@@ -147,14 +291,14 @@ public class SLS {
 
 	// all tasks must be delivered: the set of values of the variables in the
 	// nextTask array must be equal to the set of tasks T plus NV times the value NULL.
-	private boolean checkConstraint6() {
+	private boolean checkConstraint6(Action[] solution) {
 		int nullCounter = 0; // Counts the number of null actions. At the end, must be equal to nV.
 		Set<Task> notNullPickUpTasks = new HashSet<Task>();
 		Set<Task> notNullDeliveryTasks = new HashSet<Task>();
 		
 		// For each action,
-		for (int i = 0; i < nextTask.length; i++) {
-			Action taskAction = nextTask[i];
+		for (int i = 0; i < solution.length; i++) {
+			Action taskAction = solution[i];
 			// if it is null, we increment the null counter,
 			if (taskAction == null) {
 				nullCounter++;
@@ -200,9 +344,9 @@ public class SLS {
 	// Furthermore, for each task, the pickUp action has to be present in the actions "list" before the delivery.
 	// It also checks that for each vehicle, at any time, the sum of the carried tasks is not bigger than the capacity.
 	// The capacity of a vehicle cannot be exceeded: if load(ti) > capacity(vk) ⇒ vehicle(ti) != vk
-	private boolean checkConstraint7() {
+	private boolean checkConstraint7(Action[] solution) {
 		// For each vehicle, 
-		for (int i = nT; i < nextTask.length; i++) {
+		for (int i = nT; i < solution.length; i++) {
 			// we fetch the vehicle capacity.
 			Vehicle v = (Vehicle) nextTaskDomain[i];
 			int vehicleCapacity = v.capacity();
@@ -210,7 +354,7 @@ public class SLS {
 			// We create an array of size the number of tasks (initialized at 0 everywhere).
 			int[] checkSum = new int[mNumberOfTasks];
 			// We look at all the actions of the vehicle starting with the first one,
-			Action action = nextTask[i];
+			Action action = solution[i];
 			// until we find a "null" action meaning we saw all the actions of that vehicle.
 			while (action != null) {
 				Task vehicleTask = action.getTask();
@@ -236,7 +380,7 @@ public class SLS {
 					return false;
 				}
 				// We go to the next action.
-				action = nextTask[action.getActionIndex()];
+				action = solution[action.getActionIndex()];
 			}
 			// Finally, we test that each value of the checkSum array is equal to 0 (means same number of pickUp and delivery).
 			for (int sum : checkSum) {
@@ -247,4 +391,50 @@ public class SLS {
 		}
 		return true;
 	}
+	
+	private int vehicleIndex(Vehicle v){
+		for (int i = nT; i<nextTaskDomain.length;i++){
+			if (nextTaskDomain[i] instanceof Vehicle){
+				Vehicle v1  = (Vehicle) nextTaskDomain[i];
+				if (v1.id() == v.id())
+					return i;
+			}	
+		}
+		return -1;
+	}
+	
+	public List<Plan> generatePlans(){
+		 List<Plan> plans = new ArrayList<Plan>();
+		 
+		 for (int i = nT; i<nextTask.length; i++){
+			 Vehicle v = (Vehicle) nextTaskDomain[i];
+			 System.out.println("Vehicle "+ v.id());
+			 City current = v.getCurrentCity();
+			 Plan p = new Plan(current);
+			 Action actionV = nextTask[i];
+			 while ( actionV != null){
+				 // move to next action's city
+				 for (City city : current.pathTo(actionV.getCity())){
+						p.appendMove(city);
+					}
+				 current = actionV.getCity();
+				// pickup or deliver task
+				 switch (actionV.getType()){
+				 	case PICKUP:
+				 		p.appendPickup(actionV.getTask());
+				 		System.out.println("adding pickup in "+actionV.getCity().name );
+				 		break;
+				 	case DELIVERY:
+				 		p.appendDelivery(actionV.getTask());
+				 		System.out.println("adding deliver in "+actionV.getCity().name );
+				 		break;
+				 }
+				 actionV = nextTask[actionV.getActionIndex()];
+			 }
+			 plans.add(p);
+		 }
+		 return plans;
+	}
+	
+	
 }

@@ -79,10 +79,11 @@ public class CentralizedTemplate implements CentralizedBehavior {
         SLS solver = new SLS(vehicles, tasks);
         solver.stochLocalSearch();
         
-        List<Plan> plans = new ArrayList<Plan>();
+        List<Plan> plans = solver.generatePlans();
         
         return plans;
     }
+    
 
     private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
         City current = vehicle.getCurrentCity();
