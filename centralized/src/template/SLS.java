@@ -57,8 +57,15 @@ public class SLS {
 		int countProgress = 0; // used for the stopping criterion: if no improvement made for more than 20 steps, stop
 		int iter = 0;
 		selectInitialSolution();
-		System.out.println("INITSOL : ");
+		
+		// this is me trying to get a better initial solution...
+//		for (int i =0;i<20;i++){
+//			nextTask = findValidVehicleChanges(mVehicles.get(0)).get(i%3);
+//		}
+		
 		/******************************TEMPORARY PRINTOUT FOR DEBUGGING PURPOSE
+		System.out.println("INITSOL : ");
+		
 		 for (int i = nT; i<nextTask.length; i++){
 			 Vehicle v = (Vehicle) nextTaskDomain[i];
 			 System.out.println("Vehicle "+ v.id());
@@ -84,12 +91,10 @@ public class SLS {
 		do{
 		double currentCost = computeTotalCost(nextTask);
 		List<Action[]> neighbors = chooseNeighbors(); 
-		System.out.println("nb of neighbors = "+neighbors.size());
 		
 		Action[] newNextTask = localChoice(neighbors);
 		
 		if (newNextTask != null){
-			System.out.println("Changing Sol! New sol : ");
 			nextTask = newNextTask;
 			/******************************TEMPORARY PRINTOUT FOR DEBUGGING PURPOSE*
 			 for (int i = nT; i<nextTask.length; i++){
@@ -118,7 +123,7 @@ public class SLS {
 		if (currentCost == computeTotalCost(nextTask))
 			countProgress++;
 		iter++;
-		} while (iter<MAX_ITER /*& countProgress <100*/);
+		} while (iter<MAX_ITER & countProgress <100); // stops either if MAX ITER reached or if solution has been stable for over 100 steps
 		
 		System.out.println("cost found = " +computeTotalCost(nextTask) +" after "+iter+ " iterations");
 		
@@ -170,8 +175,8 @@ public class SLS {
 		};
 		
 		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
-		System.out.println("nb of vehicle changes neighbors = "+neighbors.size());
-//		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
+//		System.out.println("nb of vehicle changes neighbors = "+neighbors.size());
+		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
 		
 		
 		return neighbors;	
@@ -649,9 +654,10 @@ public class SLS {
 	private Object prevTask(Action[] solution, Action a){
 		int indexA = -1;
 		for (int i=0; i<solution.length;i++){
-			if (solution[i].equals(a)){
-				indexA = i;
-				break;
+			if (solution[i] !=null ){
+				if (solution[i].equals(a)){
+					indexA = i;
+					break;}
 			}
 		}
 		if (indexA>-1) return nextTaskDomain[indexA];
