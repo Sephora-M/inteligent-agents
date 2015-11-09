@@ -14,9 +14,9 @@ public class Action {
 	private City city;
 	private int mTime;
 	private int mActionIndex;
-	private Action complement; // the "complement action", i.e for a pickup, it is the corresponding delivery and vice versa
+	private Action mComplement; // the "complement action", i.e for a pickup, it is the corresponding delivery and vice versa
 
-	public Action(ActionType actionType, Task task, Vehicle vehicle, int time, int actionIndex) {
+	public Action(ActionType actionType, Task task, Vehicle vehicle, int time, int actionIndex, Action complement) {
 		mActionType = actionType;
 		mTask = task;
 		mVehicle = vehicle;
@@ -30,6 +30,7 @@ public class Action {
 			city = task.deliveryCity;
 			break;
 		}
+		mComplement = complement;
 	}
 	
 	public Action(ActionType actionType, Task task, int actionIndex) {
@@ -51,11 +52,11 @@ public class Action {
 	}
 	
 	public void setComplement(Action c){
-		complement = c;
+		mComplement = c;
 	}
 	
 	public Action getComplement(){
-		return complement;
+		return mComplement;
 	}
 	public ActionType getType() {
 		return mActionType;
@@ -113,7 +114,11 @@ public class Action {
 	
 	@Override
 	public String toString() {
-		return mActionType.toString() + " at time " + mTime + " of " + mTask + " by the vehicle " + mVehicle;
+		return mActionType.toString() + " at time " + mTime + " of " + mTask + " by the vehicle " + mVehicle.name();
 	}
 	
+	@Override
+	public Action clone(){
+		return new Action( mActionType, mTask, mVehicle ,  mTime,  mActionIndex,  mComplement);
+	}
 }
