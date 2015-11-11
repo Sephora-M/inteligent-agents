@@ -76,7 +76,7 @@ public class SLS {
 			countProgress++;
 		else countProgress = 0;
 		iter++;
-		} while (iter<MAX_ITER & countProgress <100/prob); // stops either if MAX ITER reached or if solution has been stable for over 100 steps
+		} while (iter<MAX_ITER /*& countProgress <100/prob*/); // stops either if MAX ITER reached or if solution has been stable for over 100 steps
 		
 		System.out.println("cost found = " +computeTotalCost(nextTask) +" after "+iter+ " iterations");
 	}
@@ -173,15 +173,17 @@ public class SLS {
 	private List<Action[]> findValidVehicleChanges(Vehicle v){
 		List<Action[]> neighbors = new ArrayList<Action[]>();
 		
-		Action[] newNextTask = null;
+		List<Action[]> newNextTasks = null;
 		for (Vehicle v2: mVehicles){
 			if (v2.id() != v.id()){
-				newNextTask = changingVehicle(v,v2);
-				if(newNextTask == null) System.out.println("no changing possible here");
+				newNextTasks = allChangingVehicle(v,v2); 
+				if(newNextTasks == null) System.out.println("no changing possible here");
 				else {
+					for(Action[] newNextTask : newNextTasks){
 					if (checkConstraints(newNextTask)){
 						neighbors.add(newNextTask);
 						}
+					}
 				}
 			}
 		}
@@ -190,13 +192,9 @@ public class SLS {
 		return neighbors;
 	}
 	
-	/**
-	 * Takes a task (pickup and deliver actions) from v1 and give it to v2
-	 * @param v1
-	 * @param v2
-	 * @return
-	 */
-	private Action[] changingVehicle(Vehicle v1, Vehicle v2){
+	private List<Action[]> allChangingVehicle(Vehicle v1, Vehicle v2){
+		List<Action[]> neighbors = new ArrayList<Action[]>();
+		
 		if (nextTask[vehicleIndex(v1)] == null){
 			System.out.println("no changing possible here");
 			return null;
@@ -208,7 +206,43 @@ public class SLS {
 				A1[i] = nextTask[i].clone();
 			else A1[i] = null;
 		}
-		Action t1 = A1[vehicleIndex(v1)]; // t1 is the pickup part of the task we give to v2
+		
+		Action act = A1[vehicleIndex(v1)];
+		Action[] newNextTask = null;
+		do{
+			if(act.getType().equals(Action.ActionType.PICKUP)){
+				newNextTask = changingVehicle(v1, v2,act);
+				if (checkConstraints(newNextTask)){
+					neighbors.add(newNextTask) ;
+				}
+			}
+			act = A1[act.getActionIndex()];
+		} while (act !=null);
+		
+		return neighbors;
+	}
+	
+	/**
+	 * Takes the action at time (pickup and deliver actions) from v1 and give it to v2
+	 * @param v1
+	 * @param v2
+	 * @return
+	 */
+	private Action[] changingVehicle(Vehicle v1, Vehicle v2, Action a){
+		if (nextTask[vehicleIndex(v1)] == null){
+			System.out.println("no changing possible here");
+			return null;
+		}
+		
+		Action[] A1 = new Action[nT+nV];
+		for(int i=0; i<A1.length;i++){
+			if (nextTask[i] != null)
+				A1[i] = nextTask[i].clone();
+			else A1[i] = null;
+		}
+		
+
+		Action t1 = a; // t1 is the pickup part of the task we give to v2
 		Action t2 = t1.getComplement().clone(); // t2 is the deliver part of the task we give to v2
 		Action nextT1= A1[t1.getActionIndex()];
 		// check that the next action of v1 isn't complement of the action we are giving to v2
@@ -227,7 +261,12 @@ public class SLS {
 			A1[prevT2.getActionIndex()] = nextT2;
 		}
 		
-		A1[vehicleIndex(v1)] = nextT1;
+		Action prevT1=null;
+		if(prevTask(nextTask,t1) instanceof Action){
+			prevT1= (Action)prevTask(nextTask,t1);
+			A1[prevT1.getActionIndex()] = nextT1;
+		} else A1[vehicleIndex(v1)] = nextT1;
+		
 		A1[t1.getActionIndex()] = t2;
 		A1[t2.getActionIndex()] = A1[vehicleIndex(v2)];
 		A1[vehicleIndex(v2)]=t1;
@@ -585,14 +624,32 @@ public class SLS {
 		return cost;
 	}
 	
-	
+	private double computeTotalCost2(Action[] solution){
+		double cost = 0.0;
+		for (int i = nT; i<solution.length; i++){
+			 Vehicle v = (Vehicle) nextTaskDomain[i];
+			 System.out.println(v.name());
+			 City current = v.homeCity();
+			 Action actionV = solution[i];
+			 while ( actionV != null){
+				 // move to next action's city
+				 double costToAdd = v.costPerKm()*current.distanceTo(actionV.getCity());
+				 System.out.println("cost from "+current.name + " to "+actionV.getCity()+" = "+costToAdd);
+				 cost += costToAdd;
+				 current = actionV.getCity();
+				 actionV = solution[actionV.getActionIndex()];
+			 }
+		 }
+		
+		return cost;
+	}
 	
 	public List<Plan> generatePlans(){
 		 List<Plan> plans = new ArrayList<Plan>();
 		 
 		 for (int i = nT; i<nextTask.length; i++){
 			 Vehicle v = (Vehicle) nextTaskDomain[i];
-			 System.out.println("Vehicle "+ v.id());
+			 System.out.println(v.name());
 			 City current = v.getCurrentCity();
 			 Plan p = new Plan(current);
 			 Action actionV = nextTask[i];
@@ -619,4 +676,25 @@ public class SLS {
 		 }
 		 return plans;
 	}
+	
+	public void printSolution(Action[] solution){
+		 for (int i = nT; i<solution.length; i++){
+			 Vehicle v = (Vehicle) nextTaskDomain[i];
+			 System.out.println("Vehicle "+ v.id());
+			 Action actionV = solution[i];
+			 while ( actionV != null){
+				 // move to next action's city
+				 switch (actionV.getType()){
+				 	case PICKUP:
+				 		System.out.println("adding pickup in "+actionV.getCity().name + " "+ actionV);
+				 		break;
+				 	case DELIVERY:
+				 		System.out.println("adding deliver in "+actionV.getCity().name + " "+ actionV);
+				 		break;
+				 }
+				 actionV = solution[actionV.getActionIndex()];
+			 }
+		 }
+	}
+
 }
