@@ -62,80 +62,30 @@ public class SLS {
 //		for (int i =0;i<20;i++){
 //			nextTask = findValidVehicleChanges(mVehicles.get(0)).get(i%3);
 //		}
-		
-		/******************************TEMPORARY PRINTOUT FOR DEBUGGING PURPOSE
-		System.out.println("INITSOL : ");
-		
-		 for (int i = nT; i<nextTask.length; i++){
-			 Vehicle v = (Vehicle) nextTaskDomain[i];
-			 System.out.println("Vehicle "+ v.id());
-			 City current = v.getCurrentCity();
-			 Action actionV = nextTask[i];
-			 while ( actionV != null){
-				 // move to next action's city
-				 current = actionV.getCity();
-				// pickup or deliver task
-				 switch (actionV.getType()){
-				 	case PICKUP:
-				 		System.out.println("adding pickup in "+actionV.getCity().name + " "+ actionV);
-				 		break;
-				 	case DELIVERY:
-				 		System.out.println("adding deliver in "+actionV.getCity().name + " "+ actionV);
-				 		break;
-				 }
-				 actionV = nextTask[actionV.getActionIndex()];
-			 }
-		 }
-		**************************************************/
 		 
 		do{
 		double currentCost = computeTotalCost(nextTask);
+		System.out.println("Current cost = "+ currentCost +" at iteration "+iter);
 		List<Action[]> neighbors = chooseNeighbors(); 
 		
 		Action[] newNextTask = localChoice(neighbors);
 		
 		if (newNextTask != null){
 			nextTask = newNextTask;
-			/******************************TEMPORARY PRINTOUT FOR DEBUGGING PURPOSE*
-			 for (int i = nT; i<nextTask.length; i++){
-				 Vehicle v = (Vehicle) nextTaskDomain[i];
-				 System.out.println("Vehicle "+ v.id());
-				 City current = v.getCurrentCity();
-				 Action actionV = nextTask[i];
-				 while ( actionV != null){
-					 // move to next action's city
-					 current = actionV.getCity();
-					// pickup or deliver task
-					 switch (actionV.getType()){
-					 	case PICKUP:
-					 		System.out.println("adding pickup in "+actionV.getCity().name + " "+ actionV);
-					 		break;
-					 	case DELIVERY:
-					 		System.out.println("adding deliver in "+actionV.getCity().name + " "+ actionV);
-					 		break;
-					 }
-					 actionV = nextTask[actionV.getActionIndex()];
-				 }
-			 }
-			/***************************************************/
 		}
 		
 		if (currentCost == computeTotalCost(nextTask))
 			countProgress++;
+		else countProgress = 0;
 		iter++;
-		} while (iter<MAX_ITER & countProgress <100); // stops either if MAX ITER reached or if solution has been stable for over 100 steps
+		} while (iter<MAX_ITER & countProgress <100/prob); // stops either if MAX ITER reached or if solution has been stable for over 100 steps
 		
 		System.out.println("cost found = " +computeTotalCost(nextTask) +" after "+iter+ " iterations");
-		
-//		Action[] A = nextTask;
-//		for (int iteration = 0; iteration < MAX_ITER; iteration++){
-//			Action[] Aold = nextTask;
-//			List<Action[] > neighbors = chooseNeighbors();
-//			localChoice(neighbors);			
-//		}
+	
 	}
 	
 	private Action[] localChoice(List<Action[]> neighbors){
+		
 		if (Math.random() > prob)
 			return nextTask;
 		else {
@@ -147,15 +97,21 @@ public class SLS {
 	
 	private Action[] selectRandomBestSol(List<Action[]> neighbors){
 		double minCost = Double.POSITIVE_INFINITY;
+		List<Integer> indices = new ArrayList<Integer>();
 		for (int i=0;i<neighbors.size();i++){
-			if (computeTotalCost(neighbors.get(i)) < minCost)
-				minCost = computeTotalCost(neighbors.get(i)) ;
+			double costI =computeTotalCost(neighbors.get(i)); 
+			if ( costI< minCost){
+				minCost = costI ;
+				indices = new ArrayList<Integer>();
+				indices.add(i);
+			} else if ( costI == minCost){
+				indices.add(i);
+			}
 		}
 		List<Action[]> bestSols = new ArrayList<Action[]>();
-		for (int i=0;i<neighbors.size();i++){
-			if (computeTotalCost(neighbors.get(i)) == minCost){
-				bestSols.add(neighbors.get(i));
-			}
+		
+		for(int i =0; i<indices.size();i++){
+			bestSols.add(neighbors.get(indices.get(i)));
 		}
 		
 		if (bestSols.size() == 1 ) 
@@ -174,10 +130,14 @@ public class SLS {
 			v = (int) (Math.random()*mVehicles.size());
 		};
 		
-		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
-//		System.out.println("nb of vehicle changes neighbors = "+neighbors.size());
-		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
+//		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
 		
+		for (Vehicle vprime: mVehicles){
+		if (nextTask[vehicleIndex(vprime)] != null){
+			List<Action[]> poss = findValidVehicleChanges(vprime); 
+			neighbors.addAll(poss);
+		}
+		}
 		
 		return neighbors;	
 	}
@@ -203,7 +163,7 @@ public class SLS {
 		for (int i=1;i<length; i++){
 			for (int j=i+1;j<length; j++){
 				newNextTask = changingTaskOrder(v, i,j);
-				if (checkConstraint7(newNextTask)){
+				if (checkConstraints(newNextTask)){
 					neighbors.add(newNextTask) ;
 				}
 			}
@@ -225,58 +185,9 @@ public class SLS {
 				newNextTask = changingVehicle(v,v2);
 				if(newNextTask == null) System.out.println("no changing possible here");
 				else {
-					if (checkConstraints(newNextTask))
+					if (checkConstraints(newNextTask)){
 						neighbors.add(newNextTask);
-					else {
-						System.out.println("constraint violated!");
-						/******************************TEMPORARY PRINTOUT FOR DEBUGGING PURPOSE*
-						
-						System.out.println("current sol :");
-						for (int i = nT; i<nextTask.length; i++){
-							 Vehicle vc = (Vehicle) nextTaskDomain[i];
-							 System.out.println("Vehicle "+ vc.id());
-							 City current = vc.getCurrentCity();
-							 Action actionV = nextTask[i];
-							 while ( actionV != null){
-								 // move to next action's city
-								 current = actionV.getCity();
-								// pickup or deliver task
-								 switch (actionV.getType()){
-								 	case PICKUP:
-								 		System.out.println("adding pickup in "+actionV.getCity().name + " "+ actionV);
-								 		break;
-								 	case DELIVERY:
-								 		System.out.println("adding deliver in "+actionV.getCity().name+ " "+ actionV );
-								 		break;
-								 }
-								 actionV = nextTask[actionV.getActionIndex()];
-							 }
 						}
-						System.out.println();
-						System.out.println("failed try");
-						
-						 for (int i = nT; i<newNextTask.length; i++){
-							 Vehicle vp = (Vehicle) nextTaskDomain[i];
-							 System.out.println("Vehicle "+ vp.id());
-							 City current = vp.getCurrentCity();
-							 Action actionV = newNextTask[i];
-							 while ( actionV != null){
-								 // move to next action's city
-								 current = actionV.getCity();
-								// pickup or deliver task
-								 switch (actionV.getType()){
-								 	case PICKUP:
-								 		System.out.println(" pickup in "+actionV.getCity().name + " "+ actionV);
-								 		break;
-								 	case DELIVERY:
-								 		System.out.println(" deliver in "+actionV.getCity().name  + " "+ actionV);
-								 		break;
-								 }
-								 actionV = newNextTask[actionV.getActionIndex()];
-							 }
-						 }
-						/***************************************************/
-					}
 				}
 			}
 		}
@@ -327,7 +238,6 @@ public class SLS {
 		A1[t2.getActionIndex()] = A1[vehicleIndex(v2)];
 		A1[vehicleIndex(v2)]=t1;
 		
-		//STILL GOTTA DO next(prevT2)= nextT2 (removing t2!!!!!!!!!)
 		t2.setVehicle(v2);
 		t1.setVehicle(v2);
 		Action actionV1 =  A1[vehicleIndex(v1)];
@@ -444,14 +354,7 @@ public class SLS {
 				biggestVehicleIndexOffset = i;
 			}
 		}
-		
-		/*VehiclePlan vehiclePlan = mVehiclesPlans.get(biggestVehicleIndex);
-		int time = 1;
-		for (Task task : mTasks) {
-			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.PICKUP, task, biggestVehicle, time));
-			vehiclePlan.addActionToVehiclePlan(new Action(ActionType.DELIVERY, task, biggestVehicle, time+1));
-			time = time + 2;
-		}*/
+	
 
 		// Give all the tasks to that vehicle.
 		nextTask[nT + biggestVehicleIndexOffset] = (Action) nextTaskDomain[0];
@@ -502,9 +405,6 @@ public class SLS {
 		for (int i = 0; i < nT; i++) {
 			if (solution[i] != null && nextTaskDomain[i] != null) {
 				if (solution[i].getTime() != (((Action) nextTaskDomain[i]).getTime() + 1)) {
-//					System.out.println("Contraint time violated!");
-					System.out.println(solution[i]);
-					System.out.println(((Action) nextTaskDomain[i]));
 					return false;
 				}
 			}
@@ -672,7 +572,8 @@ public class SLS {
 			 Action actionV = solution[i];
 			 while ( actionV != null){
 				 // move to next action's city
-				 cost += v.costPerKm()*current.distanceUnitsTo(actionV.getCity());
+				 
+				 cost += v.costPerKm()*current.distanceTo(actionV.getCity());
 				 current = actionV.getCity();
 				 actionV = solution[actionV.getActionIndex()];
 			 }

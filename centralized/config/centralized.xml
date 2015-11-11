@@ -33,7 +33,7 @@
 				<set home="Newcastle" />
 				<set speed="90" />
 				<set capacity="30" />
-				<set cost-per-km="50" />
+				<set cost-per-km="500" />
 			</vehicle>
 			
 			<!-- the second vehicle (red) -->
