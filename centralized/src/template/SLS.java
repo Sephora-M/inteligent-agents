@@ -20,7 +20,6 @@ public class SLS {
 	private static Object[] nextTaskDomain;
 	private List<Vehicle> mVehicles;
 	private TaskSet mTasks;
-	//private List<VehiclePlan> mVehiclesPlans;
 	private int nT;
 	private int nV;
 	private int mNumberOfTasks;
@@ -29,7 +28,6 @@ public class SLS {
 	public SLS(List<Vehicle> vehicles, TaskSet tasks) {
 		mVehicles = vehicles; // Deep copy necessary?
 		mTasks = TaskSet.copyOf(tasks);
-		//mVehiclesPlans = new ArrayList<VehiclePlan>();
 		mNumberOfTasks = tasks.size();
 		nT = mNumberOfTasks * 2;  // Number of tasks (pickup and delivery => *2)
 		nV = vehicles.size();  // Number of vehicles.
@@ -81,18 +79,14 @@ public class SLS {
 		} while (iter<MAX_ITER & countProgress <100/prob); // stops either if MAX ITER reached or if solution has been stable for over 100 steps
 		
 		System.out.println("cost found = " +computeTotalCost(nextTask) +" after "+iter+ " iterations");
-	
 	}
 	
-	private Action[] localChoice(List<Action[]> neighbors){
-		
+	private Action[] localChoice(List<Action[]> neighbors) {
 		if (Math.random() > prob)
 			return nextTask;
 		else {
-			
 			return selectRandomBestSol(neighbors);
 		}
-			
 	}
 	
 	private Action[] selectRandomBestSol(List<Action[]> neighbors){
@@ -131,14 +125,14 @@ public class SLS {
 		};
 		
 		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
-		
+
 		for (Vehicle vprime: mVehicles){
-		if (nextTask[vehicleIndex(vprime)] != null){
-			List<Action[]> poss = findValidVehicleChanges(vprime); 
-			neighbors.addAll(poss);
+			if (nextTask[vehicleIndex(vprime)] != null){
+				List<Action[]> poss = findValidVehicleChanges(vprime); 
+				neighbors.addAll(poss);
+			}
 		}
-		}
-		
+
 		return neighbors;	
 	}
 	
@@ -348,7 +342,6 @@ public class SLS {
 		int biggestVehicleIndexOffset = 0;
 		for (int i = 1; i < mVehicles.size(); i++) {
 			Vehicle v = mVehicles.get(i);
-			//mVehiclesPlans.add(new VehiclePlan(v, null));
 			if (v.capacity() > biggestVehicle.capacity()) {
 				biggestVehicle = v;
 				biggestVehicleIndexOffset = i;
@@ -374,7 +367,7 @@ public class SLS {
 	private boolean checkConstraints(Action[] solution) {
 		if (solution==null) return false;
 		return checkConstraint1(solution) && checkConstraint2(solution) && checkConstraint3(solution)
-				&& checkConstraint4(solution) && /*checkConstraint5(solution) &&*/ checkConstraint6(solution)
+				&& checkConstraint4(solution) && checkConstraint5(solution) && checkConstraint6(solution)
 				&& checkConstraint7(solution);
 	}
 
@@ -433,9 +426,13 @@ public class SLS {
 	// nextTask(ti) = tj ⇒ vehicle(tj) = vehicle(ti)
 	private boolean checkConstraint5(Action[] solution) {
 		for (int i = 0; i < nT; i++) {
-			if (solution[i] != null && nextTaskDomain[i] != null) {
-				if (solution[i].getVehicle() != ((Action) nextTaskDomain[i]).getVehicle()) {
-					return false;
+			Action currentAction = solution[i];
+			if (currentAction != null) {
+				Action nextAction = solution[currentAction.getActionIndex()];
+				if (nextAction != null) {
+					if (currentAction.getVehicle() != nextAction.getVehicle()) {
+						return false;
+					}
 				}
 			}
 		}
@@ -622,6 +619,4 @@ public class SLS {
 		 }
 		 return plans;
 	}
-	
-	
 }
