@@ -130,7 +130,7 @@ public class SLS {
 			v = (int) (Math.random()*mVehicles.size());
 		};
 		
-//		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
+		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
 		
 		for (Vehicle vprime: mVehicles){
 		if (nextTask[vehicleIndex(vprime)] != null){
@@ -370,11 +370,11 @@ public class SLS {
 		System.out.println("selected init sol");
 	}
 	
-	// constraints 3 and 5 is acting weird because of nextTaskDomain
+	// constraint 5 is acting weird because of nextTaskDomain
 	private boolean checkConstraints(Action[] solution) {
 		if (solution==null) return false;
-		return checkConstraint1(solution) && checkConstraint2(solution) && /*checkConstraint3(solution)
-				&& */checkConstraint4(solution) && /*checkConstraint5(solution) &&*/ checkConstraint6(solution)
+		return checkConstraint1(solution) && checkConstraint2(solution) && checkConstraint3(solution)
+				&& checkConstraint4(solution) && /*checkConstraint5(solution) &&*/ checkConstraint6(solution)
 				&& checkConstraint7(solution);
 	}
 
@@ -402,10 +402,16 @@ public class SLS {
 
 	// nextTask(ti) = tj ⇒ time(tj) = time(ti) + 1
 	private boolean checkConstraint3(Action[] solution) {
-		for (int i = 0; i < nT; i++) {
-			if (solution[i] != null && nextTaskDomain[i] != null) {
-				if (solution[i].getTime() != (((Action) nextTaskDomain[i]).getTime() + 1)) {
-					return false;
+		for (int i = nT; i < solution.length; i++) {
+			Action currentAction = solution[i];
+			if (currentAction != null) {
+				Action nextAction = solution[currentAction.getActionIndex()];
+				while (currentAction != null && nextAction != null) {
+					if (currentAction.getTime() != nextAction.getTime() - 1) {
+						return false;
+					}
+					currentAction = nextAction;
+					nextAction = solution[currentAction.getActionIndex()];
 				}
 			}
 		}
