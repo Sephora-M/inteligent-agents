@@ -61,8 +61,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
     public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
         long time_start = System.currentTimeMillis();
         
-//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-        /*Plan planVehicle1 = naivePlan(vehicles.get(0), tasks);
+		/*System.out.println("Agent " + agent.id() + " has tasks " + tasks);
+        Plan planVehicle1 = naivePlan(vehicles.get(0), tasks);
 
         List<Plan> plans = new ArrayList<Plan>();
         plans.add(planVehicle1);
@@ -81,6 +81,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
         
         List<Plan> plans = solver.generatePlans();
         
+        System.out.println("Planing Time = "+-(time_start-System.currentTimeMillis()) +"ms");
+        
         return plans;
     }
     
@@ -88,12 +90,16 @@ public class CentralizedTemplate implements CentralizedBehavior {
     private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
         City current = vehicle.getCurrentCity();
         Plan plan = new Plan(current);
+        
+        double cost = 0.0;
 
         for (Task task : tasks) {
             // move: current city => pickup location
             for (City city : current.pathTo(task.pickupCity)) {
                 plan.appendMove(city);
             }
+            
+            cost += vehicle.costPerKm() * current.distanceTo(task.pickupCity);
 
             plan.appendPickup(task);
 
@@ -101,12 +107,17 @@ public class CentralizedTemplate implements CentralizedBehavior {
             for (City city : task.path()) {
                 plan.appendMove(city);
             }
+            
+            cost += vehicle.costPerKm() * task.pathLength();
 
             plan.appendDelivery(task);
 
             // set current city
             current = task.deliveryCity;
         }
+        
+        System.out.println(cost);
+        
         return plan;
     }
 }
