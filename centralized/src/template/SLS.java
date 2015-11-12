@@ -25,7 +25,7 @@ public class SLS {
 	private int mNumberOfTasks;
 	
 	public SLS(List<Vehicle> vehicles, TaskSet tasks) {
-		mVehicles = vehicles; // Deep copy necessary?
+		mVehicles = vehicles;
 		mTasks = TaskSet.copyOf(tasks);
 		mNumberOfTasks = tasks.size();
 		nT = mNumberOfTasks * 2;  // Number of tasks (pickup and delivery => *2)
