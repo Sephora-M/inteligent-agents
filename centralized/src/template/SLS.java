@@ -73,10 +73,8 @@ public class SLS {
 	
 	private Action[] localChoice(List<Action[]> neighbors) {
 		if (Math.random() > prob){
-			System.out.println("old sol chosen!");
 			return nextTask;}
 		else {
-			System.out.println("new sol chosen!");
 			Action[] newSol = selectRandomBestSol(neighbors);
 			return newSol;
 		}
@@ -118,10 +116,10 @@ public class SLS {
 			v = (int) (Math.random()*mVehicles.size());
 		}
 		
-		neighbors.addAll(findValidOrderChanges3(mVehicles.get(v)));
+		neighbors.addAll(findValidOrderChanges2(mVehicles.get(v)));
 		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
 
-		return neighbors;	
+		return neighbors;
 	}
 	
 	/**
@@ -261,25 +259,6 @@ public class SLS {
 		return neighbors;
 	}
 	
-	private List<Action[]> findValidVehicleChanges2(Vehicle v){
-		List<Action[]> neighbors = new ArrayList<Action[]>();
-
-		Action[] newNextTask = null;
-		for (Vehicle v2: mVehicles){
-			if (v2.id() != v.id()){
-				newNextTask = changingVehicle(v,v2, randomPickUpAction(v)); 
-				if(newNextTask == null) System.out.println("no changing possible here");
-				else {
-					if (checkConstraints(newNextTask))
-						neighbors.add(newNextTask);
-				}
-			}
-		}
-
-		if(neighbors.isEmpty()) System.out.println("Empty neighbors subset");
-		return neighbors;
-	}
-	
 	private List<Action[]> allChangingVehicle(Vehicle v1, Vehicle v2){
 		List<Action[]> neighbors = new ArrayList<Action[]>();
 		
@@ -310,27 +289,6 @@ public class SLS {
 		return neighbors;
 	}
 	
-	private Action randomPickUpAction(Vehicle v){
-		Action act = nextTask[vehicleIndex(v)];
-		int nbTask = 0;
-		while (act !=null){
-			nbTask++;
-			act = nextTask[act.getActionIndex()];
-		};
-
-		Action randomPickUp = null;
-
-		while (randomPickUp == null ||( randomPickUp != null &!randomPickUp.getType().equals(Action.ActionType.PICKUP))) {
-			
-			int taskA = (int) (Math.random()*nbTask);
-			for(Action a: nextTask){
-				if (a != null && a.getTime() == taskA && a.getVehicle().id() == v.id())
-					randomPickUp = a.clone();
-			}
-		}
-		return randomPickUp;
-	}
-	
 	/**
 	 * Takes the action at time (pickup and deliver actions) from v1 and give it to v2
 	 * @param v1
@@ -349,7 +307,6 @@ public class SLS {
 				A1[i] = nextTask[i].clone();
 			else A1[i] = null;
 		}
-		
 
 		Action t1 = a; // t1 is the pickup part of the task we give to v2
 		Action t2 = t1.getComplement().clone(); // t2 is the deliver part of the task we give to v2
@@ -373,69 +330,6 @@ public class SLS {
 		Action prevT1=null;
 		if(prevTask(nextTask,t1) instanceof Action){
 			prevT1= (Action)prevTask(nextTask,t1);
-			A1[prevT1.getActionIndex()] = nextT1;
-		} else A1[vehicleIndex(v1)] = nextT1;
-		
-		A1[t1.getActionIndex()] = t2;
-		A1[t2.getActionIndex()] = A1[vehicleIndex(v2)];
-		A1[vehicleIndex(v2)]=t1;
-		
-		t2.setVehicle(v2);
-		t1.setVehicle(v2);
-		Action actionV1 =  A1[vehicleIndex(v1)];
-		
-		int time =1;
-		while (actionV1 != null){
-			actionV1.setTime(time);
-			time++;
-			actionV1 = A1[actionV1.getActionIndex()];
-		}
-		time = 1;
-		Action actionV2 =  A1[vehicleIndex(v2)];
-		while (actionV2 != null){
-			actionV2.setTime(time);
-			time++;
-			actionV2 = A1[actionV2.getActionIndex()];
-		}
-		return A1;
-	}
-	
-	private Action[] changingVehicle2(Action[] tempSol, Vehicle v1, Vehicle v2, Action a){
-		if (tempSol[vehicleIndex(v1)] == null){
-			System.out.println("no changing possible here");
-			return null;
-		}
-		
-		Action[] A1 = new Action[nT+nV];
-		for(int i=0; i<A1.length;i++){
-			if (tempSol[i] != null)
-				A1[i] = tempSol[i].clone();
-			else A1[i] = null;
-		}
-		
-
-		Action t1 = a; // t1 is the pickup part of the task we give to v2
-		Action t2 = t1.getComplement().clone(); // t2 is the deliver part of the task we give to v2
-		Action nextT1= A1[t1.getActionIndex()];
-		// check that the next action of v1 isn't complement of the action we are giving to v2
-		boolean t1t2 = false; // true if t2 follows t2
-		if (nextT1.equals(t2)){
-			nextT1=A1[t2.getActionIndex()];
-			t1t2 = true;
-		}
-		
-		Action nextT2= A1[t2.getActionIndex()];
-		if(!t1t2){
-			Action prevT2=null;
-			if(prevTask(tempSol,t2) instanceof Action)
-				prevT2= (Action)prevTask(tempSol,t2);
-
-			A1[prevT2.getActionIndex()] = nextT2;
-		}
-		
-		Action prevT1=null;
-		if(prevTask(tempSol,t1) instanceof Action){
-			prevT1= (Action)prevTask(tempSol,t1);
 			A1[prevT1.getActionIndex()] = nextT1;
 		} else A1[vehicleIndex(v1)] = nextT1;
 		
