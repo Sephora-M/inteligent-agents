@@ -15,7 +15,7 @@ import logist.plan.Plan;
 public class SLS {
 	
 	private final static int MAX_ITER = 10000;
-	private final double prob = 0.5;
+	private final double prob = 0.8;
 	private static Action[] nextTask;
 	private static Object[] nextTaskDomain;
 	private List<Vehicle> mVehicles;
@@ -82,11 +82,27 @@ public class SLS {
 	}
 	
 	private Action[] localChoice(List<Action[]> neighbors) {
-		if (Math.random() > prob)
-			return nextTask;
+		if (Math.random() > prob){
+			System.out.println("old sol chosen!");
+			return nextTask;}
 		else {
-			return selectRandomBestSol(neighbors);
+			System.out.println("new sol chosen!");
+			Action[] newSol = selectRandomBestSol(neighbors);
+//			if (solutionEqual(newSol, nextTask)) System.out.println("new is identic to old!!!");
+			return newSol;
 		}
+	}
+	
+	private boolean solutionEqual(Action[] a, Action[] b){
+		for (int i =0 ; i<a.length; i++){
+			if (!a[i].equals( b[i])) {
+				System.out.println("new"+a[i]);
+				System.out.println("old"+b[i]);
+				return false;
+			}
+		}
+
+		return true;
 	}
 	
 	private Action[] selectRandomBestSol(List<Action[]> neighbors){
@@ -110,7 +126,9 @@ public class SLS {
 		
 		if (bestSols.size() == 1 ) 
 			return bestSols.get(0);
-		else if (bestSols.size()<1) return null;
+		else if (bestSols.size()<1) {
+			System.out.println("empty neighborhood!");
+			return null;}
 		else
 			return bestSols.get((int) Math.random()*bestSols.size());
 	}
@@ -124,14 +142,19 @@ public class SLS {
 			v = (int) (Math.random()*mVehicles.size());
 		};
 		
-		neighbors.addAll(findValidOrderChanges(mVehicles.get(v)));
+		
+		
+		
+		neighbors.addAll(findValidOrderChanges3(mVehicles.get(v)));
+		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
 
-		for (Vehicle vprime: mVehicles){
-			if (nextTask[vehicleIndex(vprime)] != null){
-				List<Action[]> poss = findValidVehicleChanges(vprime); 
-				neighbors.addAll(poss);
-			}
-		}
+//		for (Vehicle vprime: mVehicles){
+//			if (nextTask[vehicleIndex(vprime)] != null){
+//				List<Action[]> poss = findValidVehicleChanges(vprime);
+//				neighbors.addAll(findValidOrderChanges(vprime));
+//				neighbors.addAll(poss);
+//			}
+//		}
 
 		return neighbors;	
 	}
@@ -148,14 +171,14 @@ public class SLS {
 		int length = 0;
 		Action act = nextTask[vehicleIndex(v)];
 		
-		do{
+		while (act !=null){
 			length++;
 			act = nextTask[act.getActionIndex()];
-		} while (act !=null);
+		} ;
 		
 		Action[] newNextTask = null;
-		for (int i=1;i<length; i++){
-			for (int j=i+1;j<length; j++){
+		for (int i=1;i<=length; i++){
+			for (int j=i+1;j<=length; j++){
 				newNextTask = changingTaskOrder(v, i,j);
 				if (checkConstraints(newNextTask)){
 					neighbors.add(newNextTask) ;
@@ -163,6 +186,106 @@ public class SLS {
 			}
 		}
 		return neighbors;
+	}
+	
+	private List<Action[]> findValidOrderChanges2(Vehicle v){
+		
+		
+		List<Action[]> neighbors = new ArrayList<Action[]>();
+		
+		int length = 0;
+		Action act = nextTask[vehicleIndex(v)];
+		
+		while (act !=null){
+			length++;
+			act = nextTask[act.getActionIndex()];
+		} ;
+		
+		Action[] newNextTask = null;
+		Action[] tempNeighbors = null;
+//		for (int i=1;i<=length; i++){
+//			for (int j=i+1;j<=length; j++){
+		int i=0,j=0;
+//		do{
+			while(i==j){
+				i = (int) (Math.random()*(length+1));
+				j = (int) (Math.random()*(length+1));
+			}
+			if (i>j){
+				int temp = i;
+				i =j;
+				j = temp;
+			}
+//			newNextTask = changingTaskOrder(v, i,j);
+//		} while(checkConstraints(newNextTask));
+		
+				newNextTask = changingTaskOrder(v, i,j);
+				if (checkConstraints(newNextTask)){
+					neighbors.add(newNextTask) ;
+				
+				for (int k=1;k<=length; k++){
+					for (int l=k+1;l<=length; l++){
+//				for (int n=0; n<200; n++){
+//				int k = 0, l = 0;
+//				while(k==j & (k==i & l==j)){
+//					k = (int) (Math.random()*length);
+//					j = (int) (Math.random()*length);
+//				}
+						if (i!=k && l!=j && newNextTask != null ){
+							tempNeighbors = changingTaskOrder2(newNextTask,v,k,l);
+							if (checkConstraints(tempNeighbors)){
+								neighbors.add(tempNeighbors) ;
+							}
+						}
+//				}
+					}
+				}
+				}
+				
+//			}
+//		}
+		System.out.println("size neighborhood = "+ neighbors.size());
+		return neighbors;
+	}
+	
+private List<Action[]> findValidOrderChanges3(Vehicle v){
+		
+	List<Action[]> neighbors = new ArrayList<Action[]>();
+	
+	int length = 0;
+	Action act = nextTask[vehicleIndex(v)];
+	
+	while (act !=null){
+		length++;
+		act = nextTask[act.getActionIndex()];
+	} ;
+	
+	Action[] newNextTask = null;
+	Action[] tempNeighbors = null;
+	for (int i=1;i<=length; i++){
+		for (int j=i+1;j<=length; j++){
+
+			newNextTask = changingTaskOrder(v, i,j);
+			if (checkConstraints(newNextTask)){
+				neighbors.add(newNextTask) ;
+
+				for (int k=1;k<=length; k++){
+					for (int l=k+1;l<=length; l++){
+						if (i!=k && l!=j && newNextTask != null ){
+							tempNeighbors = changingTaskOrder2(newNextTask,v,k,l);
+							if (checkConstraints(tempNeighbors)){
+								neighbors.add(tempNeighbors) ;
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+	
+	return neighbors;
+		
 	}
 	
 	/**
@@ -188,6 +311,27 @@ public class SLS {
 			}
 		}
 		
+		if(neighbors.isEmpty()) System.out.println("Empty neighbors subset");
+		else System.out.println("size of change neighborhood for "+v.name()+" = " + neighbors.size());
+		return neighbors;
+	}
+	
+	
+	private List<Action[]> findValidVehicleChanges2(Vehicle v){
+		List<Action[]> neighbors = new ArrayList<Action[]>();
+
+		Action[] newNextTask = null;
+		for (Vehicle v2: mVehicles){
+			if (v2.id() != v.id()){
+				newNextTask = changingVehicle(v,v2, randomPickUpAction(v)); 
+				if(newNextTask == null) System.out.println("no changing possible here");
+				else {
+					if (checkConstraints(newNextTask))
+						neighbors.add(newNextTask);
+				}
+			}
+		}
+
 		if(neighbors.isEmpty()) System.out.println("Empty neighbors subset");
 		return neighbors;
 	}
@@ -222,6 +366,27 @@ public class SLS {
 		return neighbors;
 	}
 	
+	private Action randomPickUpAction(Vehicle v){
+		
+		Action act = nextTask[vehicleIndex(v)];
+		int nbTask = 0;
+		while (act !=null){
+			nbTask++;
+			act = nextTask[act.getActionIndex()];
+		};
+
+		Action randomPickUp = null;
+
+		while (randomPickUp == null ||( randomPickUp != null &!randomPickUp.getType().equals(Action.ActionType.PICKUP))) {
+			
+			int taskA = (int) (Math.random()*nbTask);
+			for(Action a: nextTask){
+				if (a != null && a.getTime() == taskA && a.getVehicle().id() == v.id())
+					randomPickUp = a.clone();
+			}
+		} ;
+		return randomPickUp;
+	}
 	/**
 	 * Takes the action at time (pickup and deliver actions) from v1 and give it to v2
 	 * @param v1
@@ -291,6 +456,69 @@ public class SLS {
 		return A1;
 	}
 	
+	private Action[] changingVehicle2(Action[] tempSol, Vehicle v1, Vehicle v2, Action a){
+		if (tempSol[vehicleIndex(v1)] == null){
+			System.out.println("no changing possible here");
+			return null;
+		}
+		
+		Action[] A1 = new Action[nT+nV];
+		for(int i=0; i<A1.length;i++){
+			if (tempSol[i] != null)
+				A1[i] = tempSol[i].clone();
+			else A1[i] = null;
+		}
+		
+
+		Action t1 = a; // t1 is the pickup part of the task we give to v2
+		Action t2 = t1.getComplement().clone(); // t2 is the deliver part of the task we give to v2
+		Action nextT1= A1[t1.getActionIndex()];
+		// check that the next action of v1 isn't complement of the action we are giving to v2
+		boolean t1t2 = false; // true if t2 follows t2
+		if (nextT1.equals(t2)){
+			nextT1=A1[t2.getActionIndex()];
+			t1t2 = true;
+		}
+		
+		Action nextT2= A1[t2.getActionIndex()];
+		if(!t1t2){
+			Action prevT2=null;
+			if(prevTask(tempSol,t2) instanceof Action)
+				prevT2= (Action)prevTask(tempSol,t2);
+
+			A1[prevT2.getActionIndex()] = nextT2;
+		}
+		
+		Action prevT1=null;
+		if(prevTask(tempSol,t1) instanceof Action){
+			prevT1= (Action)prevTask(tempSol,t1);
+			A1[prevT1.getActionIndex()] = nextT1;
+		} else A1[vehicleIndex(v1)] = nextT1;
+		
+		A1[t1.getActionIndex()] = t2;
+		A1[t2.getActionIndex()] = A1[vehicleIndex(v2)];
+		A1[vehicleIndex(v2)]=t1;
+		
+		t2.setVehicle(v2);
+		t1.setVehicle(v2);
+		Action actionV1 =  A1[vehicleIndex(v1)];
+		
+		int time =1;
+		while (actionV1 != null){
+			actionV1.setTime(time);
+			time++;
+			actionV1 = A1[actionV1.getActionIndex()];
+		}
+		time = 1;
+		Action actionV2 =  A1[vehicleIndex(v2)];
+		while (actionV2 != null){
+			actionV2.setTime(time);
+			time++;
+			actionV2 = A1[actionV2.getActionIndex()];
+		}
+		return A1;
+	}
+	
 	private Action[] changingTaskOrder(Vehicle v, int idxA1, int idxA2){
 		if (nextTask[vehicleIndex(v)] == null)
 			return null;
@@ -299,6 +527,90 @@ public class SLS {
 		for(int i=0; i<A1.length;i++){
 			if (nextTask[i] != null)
 				A1[i] = nextTask[i].clone();
+			else A1[i] = null;
+		}
+		
+		Action next = A1[vehicleIndex(v)];
+		Action first = null;
+		Action second = null;
+		while (next != null){
+			if (next.getTime() == idxA1){
+				first = next;
+			}
+			else if  (next.getTime() == idxA2){
+				second = next;
+			}
+			next = A1[next.getActionIndex()];
+		}
+		
+		if (first == null || second == null) return null; // degenerate case where idxA1 or idxA2 are not valid times
+		
+		Action prevFirst = null;
+		for (int i=0; i<A1.length;i++){
+			if (A1[i] != null && A1[i].equals(first)){
+				if(nextTaskDomain[i] instanceof Action)
+					prevFirst = (Action) nextTaskDomain[i];
+				break;
+			}
+		}
+		
+		Action prevSecond = null;
+		for (int i=0; i<A1.length;i++){
+			if (A1[i] != null && A1[i].equals(second)){
+				if(nextTaskDomain[i] instanceof Action)
+					prevSecond = (Action) nextTaskDomain[i];
+				break;
+			}
+		}
+		
+		Action nextFirst = A1[first.getActionIndex()];
+		
+		Action nextSecond = A1[second.getActionIndex()];
+		
+		if (nextFirst.equals(second)){
+			if(prevFirst !=null)
+				A1[prevFirst.getActionIndex()] = second;
+			else A1[vehicleIndex(v)] = second;
+			
+			A1[second.getActionIndex()] = first;
+			A1[first.getActionIndex()] = nextSecond;
+			
+			int time = 1;
+			Action actionV =  A1[vehicleIndex(v)];
+			while (actionV != null){
+				actionV.setTime(time);
+				time++;
+				actionV = A1[actionV.getActionIndex()];
+			}
+		}
+		else {
+			if(prevFirst !=null)
+				A1[prevFirst.getActionIndex()] = second;
+			else A1[vehicleIndex(v)] = second;
+			A1[second.getActionIndex()] = nextFirst;
+			A1[prevSecond.getActionIndex()] = first;
+			A1[first.getActionIndex()] = nextSecond;
+			
+			int time = 1;
+			Action actionV =  A1[vehicleIndex(v)];
+			while (actionV != null){
+				actionV.setTime(time);
+				time++;
+				actionV = A1[actionV.getActionIndex()];
+			}
+		}
+		return A1;
+		
+	}
+	
+	private Action[] changingTaskOrder2(Action[] tempSol,Vehicle v, int idxA1, int idxA2){
+		if (tempSol[vehicleIndex(v)] == null)
+			return null;
+		
+		Action[] A1 = new Action[nT+nV];
+		for(int i=0; i<A1.length;i++){
+			if (tempSol[i] != null)
+				A1[i] = tempSol[i].clone();
 			else A1[i] = null;
 		}
 		
