@@ -116,7 +116,7 @@ public class SLS {
 			v = (int) (Math.random()*mVehicles.size());
 		}
 		
-		neighbors.addAll(findValidOrderChanges2(mVehicles.get(v)));
+		neighbors.addAll(findValidOrderChanges3(mVehicles.get(v)));
 		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
 
 		return neighbors;
@@ -194,25 +194,27 @@ public class SLS {
 		return neighbors;
 	}
 	
-	private List<Action[]> findValidOrderChanges3(Vehicle v){
-		List<Action[]> neighbors = new ArrayList<Action[]>();
 
-		int length = 0;
-		Action act = nextTask[vehicleIndex(v)];
+private List<Action[]> findValidOrderChanges3(Vehicle v){
+		
+	List<Action[]> neighbors = new ArrayList<Action[]>();
+	
+	int length = 0;
+	Action act = nextTask[vehicleIndex(v)];
+	
+	while (act !=null){
+		length++;
+		act = nextTask[act.getActionIndex()];
+	} ;
+	
+	Action[] newNextTask = null;
+	Action[] tempNeighbors = null;
+	for (int i=1;i<=length; i++){
+		for (int j=i+1;j<=length; j++){
 
-		while (act !=null){
-			length++;
-			act = nextTask[act.getActionIndex()];
-		}
-
-		Action[] newNextTask = null;
-		Action[] tempNeighbors = null;
-		for (int i=1;i<=length; i++){
-			for (int j=i+1;j<=length; j++){
-
-				newNextTask = changingTaskOrder(v, i,j);
-				if (checkConstraints(newNextTask)){
-					neighbors.add(newNextTask) ;
+			newNextTask = changingTaskOrder(v, i,j);
+			if (checkConstraints(newNextTask) && Math.random()<0.05){
+				neighbors.add(newNextTask) ;
 
 					for (int k=1;k<=length; k++){
 						for (int l=k+1;l<=length; l++){
