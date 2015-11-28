@@ -21,36 +21,25 @@ public class SLS {
 	private List<Vehicle> mVehicles;
 	double minCost = Double.POSITIVE_INFINITY;
 	int numberOfVehicles;
-	private TaskSet mTasks;
+	private HashSet<Task> mTasks;
 	private int nT;
 	private int nV;
 	private int mNumberOfTasks;
 
 	public SLS(List<Vehicle> vehicles, TaskSet tasks) {
-		mVehicles = vehicles;
-		numberOfVehicles = mVehicles.size();
-		mTasks = TaskSet.copyOf(tasks);
-		mNumberOfTasks = tasks.size();
-		nT = mNumberOfTasks * 2; // Number of tasks (pickup and delivery => *2)
-		nV = vehicles.size(); // Number of vehicles.
-		nextTask = new Action[nT + nV];
-		nextTaskDomain = new Object[nT + nV];
-
-		int i = 0;
-		for (Task task : tasks) {
-			Action pickUp = new Action(ActionType.PICKUP, task, i);
-			Action dropOff = new Action(ActionType.DELIVERY, task, i + 1);
-			pickUp.setComplement(dropOff);
-			dropOff.setComplement(pickUp);
-			nextTaskDomain[i] = pickUp;
-			nextTaskDomain[i + 1] = dropOff;
-			i = i + 2;
+		mTasks = new HashSet<Task>();
+		for (Task t : tasks) {
+			mTasks.add(t);
 		}
-
-		for (Vehicle v : vehicles) {
-			nextTaskDomain[i] = v;
-			i++;
+		init(vehicles);
+	}
+	
+	public SLS(List<Vehicle> vehicles, Task[] tasks) {
+		mTasks = new HashSet<Task>();
+		for (Task t : tasks) {
+			mTasks.add(t);
 		}
+		init(vehicles);
 	}
 
 	public double getCost() {
@@ -84,9 +73,9 @@ public class SLS {
 					minCost = currentCost;
 				}
 
-				System.out.println("MIN_COST => " + minCost);
-				System.out.println("Current cost = " + currentCost
-						+ " at iteration " + iter);
+				//System.out.println("MIN_COST => " + minCost);
+				//System.out.println("Current cost = " + currentCost
+						//+ " at iteration " + iter);
 
 				iter++;
 			}
@@ -94,6 +83,32 @@ public class SLS {
 			minCost = computeTotalCost(nextTaskSol);
 			/*System.out.println("Cost found = " + minCost
 					+ " after " + iter + " iterations");*/
+		}
+	}
+	
+	private void init(List<Vehicle> vehicles) {
+		mVehicles = vehicles;
+		numberOfVehicles = mVehicles.size();
+		mNumberOfTasks = mTasks.size();
+		nT = mNumberOfTasks * 2; // Number of tasks (pickup and delivery => *2)
+		nV = vehicles.size(); // Number of vehicles.
+		nextTask = new Action[nT + nV];
+		nextTaskDomain = new Object[nT + nV];
+		
+		int i = 0;
+		for (Task task : mTasks) {
+			Action pickUp = new Action(ActionType.PICKUP, task, i);
+			Action dropOff = new Action(ActionType.DELIVERY, task, i + 1);
+			pickUp.setComplement(dropOff);
+			dropOff.setComplement(pickUp);
+			nextTaskDomain[i] = pickUp;
+			nextTaskDomain[i + 1] = dropOff;
+			i = i + 2;
+		}
+
+		for (Vehicle v : mVehicles) {
+			nextTaskDomain[i] = v;
+			i++;
 		}
 	}
 
@@ -138,7 +153,7 @@ public class SLS {
 		if (bestSols.size() == 1) {
 			return bestSols.get(0);
 		} else if (bestSols.size() < 1) {
-			System.out.println("empty neighborhood!");
+			//System.out.println("empty neighborhood!");
 			return null;
 		} else {
 			return bestSols.get((int) Math.random() * bestSols.size());
@@ -303,7 +318,7 @@ public class SLS {
 		}
 
 		if (neighbors.isEmpty()) {
-			System.out.println("Empty neighbors subset");
+			//System.out.println("Empty neighbors subset");
 		}
 
 		return neighbors;
@@ -795,6 +810,9 @@ public class SLS {
 				Task vehicleTask = action.getTask();
 				int taskIndex = vehicleTask.id; // Index of the task (from 0 to
 				// numberOfTasks)
+				if (taskIndex >= checkSum.length) {
+					return false;
+				}
 				int currentValue = checkSum[taskIndex]; // Current value of the
 				// checkSum array for
 				// that task
@@ -920,6 +938,9 @@ public class SLS {
 	}
 
 	public void printSolution(Action[] solution) {
+		if (solution == null) {
+			solution = nextTaskSol;
+		}
 		for (int i = nT; i < solution.length; i++) {
 			Vehicle v = (Vehicle) nextTaskDomain[i];
 			System.out.println("Vehicle " + v.id());

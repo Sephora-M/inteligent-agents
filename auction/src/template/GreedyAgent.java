@@ -66,9 +66,15 @@ public class GreedyAgent implements AuctionBehavior {
 		System.out.println("-- auction results --");
 		if (winner == agent.id()) {
 			System.out.println("Greedy agent wins!");
+			System.out.println("New cost is " + mNewCost);
 			mTasks = copy(mTasksWithNewTask);  // Add the win task to our tasks.
 			mCurrentCost = mNewCost;  // Update the cost of our plan.
 			mReward += bids[winner];  // Add the task reward.
+			System.out.println(mTasks.length + " tasks!");
+		} else {
+			System.out.println("Greedy agent losses!");
+			System.out.println("Current cost is " + mCurrentCost);
+			System.out.println(mTasks.length + " tasks!");
 		}
 	}
 	
@@ -84,12 +90,17 @@ public class GreedyAgent implements AuctionBehavior {
 		}
 		mTasksWithNewTask[mTasks.length] = task;
 
-		mSolver = new SLS(mVehicles, TaskSet.create(mTasksWithNewTask)); // BUG task indices
-		mSolver.stochLocalSearch((long) 0.9 * TIMEOUT_PLAN);
+		mSolver = new SLS(mVehicles, mTasksWithNewTask);
+		mSolver.stochLocalSearch((long) (0.05 * (double) TIMEOUT_PLAN));
 		mNewCost = mSolver.getCost();
+		System.out.println("Cost is " + mNewCost);
 
 		double marginalCost = mNewCost - mCurrentCost;
 		bid = marginalCost;
+		
+		if (bid == 0) {
+			//mSolver.printSolution(null);
+		}
 		
 		System.out.println("Greedy agent (" + agent.id() + ") bids " + (long) Math.round(bid));
         
@@ -103,7 +114,7 @@ public class GreedyAgent implements AuctionBehavior {
 		System.out.println("-- Plan --");
 		System.out.println("Number of tasks = " + tasks.size());
 		mSolver = new SLS(vehicles, tasks);
-        mSolver.stochLocalSearch((long) 0.9*TIMEOUT_PLAN);
+        mSolver.stochLocalSearch((long) (0.1 * (double) TIMEOUT_PLAN));
         
         List<Plan> plans = mSolver.generatePlans();
         while (plans.size() < vehicles.size())
