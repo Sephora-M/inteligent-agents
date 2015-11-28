@@ -15,10 +15,11 @@ import logist.plan.Plan;
 public class SLS {
 	private final double prob = 0.8;
 	private final double q = 0.0;
-	private static Action[] nextTask;
-	private static Object[] nextTaskDomain;
-	private static Action[] nextTaskSol;
+	private Action[] nextTask;
+	private Object[] nextTaskDomain;
+	private Action[] nextTaskSol;
 	private List<Vehicle> mVehicles;
+	double minCost = Double.POSITIVE_INFINITY;
 	int numberOfVehicles;
 	private TaskSet mTasks;
 	private int nT;
@@ -52,41 +53,50 @@ public class SLS {
 		}
 	}
 
-	public void stochLocalSearch(long timeout) {
-		long time_start = System.currentTimeMillis();
-		long time_end = time_start + timeout;
-		
-		int iter = 0;
-		selectInitialSolution();
-
-		double minCost = Double.POSITIVE_INFINITY;
-
-		do {			
-			List<Action[]> neighbors = chooseNeighbors();
-
-			Action[] newNextTask = localChoice(neighbors);
-
-			if (newNextTask != null) {
-				nextTask = newNextTask;
-			}
-			
-			double currentCost = computeTotalCost(nextTask);
-			if (currentCost < minCost) {
-				nextTaskSol = deepCopy(nextTask);
-				minCost = currentCost;
-			}
-			
-			System.out.println("MIN_COST => " + minCost);
-			System.out.println("Current cost = " + currentCost
-					+ " at iteration " + iter);
-
-			iter++;
-		} while (System.currentTimeMillis() < time_end);
-
-		System.out.println("Cost found = " + computeTotalCost(nextTaskSol)
-				+ " after " + iter + " iterations");
+	public double getCost() {
+		if (nT == 0) {
+			return 0.0;
+		} else {
+			return minCost;
+		}
 	}
-	
+
+	public void stochLocalSearch(long timeout) {
+		if (nT != 0) {
+			long time_start = System.currentTimeMillis();
+			long time_end = time_start + timeout;
+
+			int iter = 0;
+			selectInitialSolution();
+
+			while (System.currentTimeMillis() < time_end) {
+				List<Action[]> neighbors = chooseNeighbors();
+
+				Action[] newNextTask = localChoice(neighbors);
+
+				if (newNextTask != null) {
+					nextTask = newNextTask;
+				}
+
+				double currentCost = computeTotalCost(nextTask);
+				if (currentCost < minCost) {
+					nextTaskSol = deepCopy(nextTask);
+					minCost = currentCost;
+				}
+
+				System.out.println("MIN_COST => " + minCost);
+				System.out.println("Current cost = " + currentCost
+						+ " at iteration " + iter);
+
+				iter++;
+			}
+			
+			minCost = computeTotalCost(nextTaskSol);
+			/*System.out.println("Cost found = " + minCost
+					+ " after " + iter + " iterations");*/
+		}
+	}
+
 	private Action[] deepCopy(Action[] from) {
 		Action[] to = new Action[from.length];
 		for (int i = 0; i < to.length; i++) {
@@ -616,7 +626,7 @@ public class SLS {
 			nextTask[i - 1].setTime(i + 1);
 		}
 		nextTask[nT - 1] = null;
-		System.out.println("selected init sol");
+		nextTaskSol = deepCopy(nextTask);
 	}
 
 	private boolean checkConstraints(Action[] solution) {
@@ -855,15 +865,18 @@ public class SLS {
 
 	private double computeTotalCost(Action[] solution) {
 		double cost = 0.0;
-		for (int i = nT; i < solution.length; i++) {
-			Vehicle v = (Vehicle) nextTaskDomain[i];
-			City current = v.homeCity();
-			Action actionV = solution[i];
-			while (actionV != null) {
-				// move to next action's city
-				cost += v.costPerKm() * current.distanceTo(actionV.getCity());
-				current = actionV.getCity();
-				actionV = solution[actionV.getActionIndex()];
+		if (solution != null) {
+			for (int i = nT; i < solution.length; i++) {
+				Vehicle v = (Vehicle) nextTaskDomain[i];
+				City current = v.homeCity();
+				Action actionV = solution[i];
+				while (actionV != null) {
+					// move to next action's city
+					cost += v.costPerKm()
+							* current.distanceTo(actionV.getCity());
+					current = actionV.getCity();
+					actionV = solution[actionV.getActionIndex()];
+				}
 			}
 		}
 		return cost;
@@ -872,34 +885,36 @@ public class SLS {
 	public List<Plan> generatePlans() {
 		List<Plan> plans = new ArrayList<Plan>();
 
-		for (int i = nT; i < nextTaskSol.length; i++) {
-			Vehicle v = (Vehicle) nextTaskDomain[i];
-			System.out.println(v.name());
-			City current = v.getCurrentCity();
-			Plan p = new Plan(current);
-			Action actionV = nextTaskSol[i];
-			while (actionV != null) {
-				// move to next action's city
-				for (City city : current.pathTo(actionV.getCity())) {
-					p.appendMove(city);
+		if (nextTaskSol != null) {
+			for (int i = nT; i < nextTaskSol.length; i++) {
+				Vehicle v = (Vehicle) nextTaskDomain[i];
+				System.out.println(v.name());
+				City current = v.getCurrentCity();
+				Plan p = new Plan(current);
+				Action actionV = nextTaskSol[i];
+				while (actionV != null) {
+					// move to next action's city
+					for (City city : current.pathTo(actionV.getCity())) {
+						p.appendMove(city);
+					}
+					current = actionV.getCity();
+					// pickup or deliver task
+					switch (actionV.getType()) {
+					case PICKUP:
+						p.appendPickup(actionV.getTask());
+						System.out.println("adding pickup in "
+								+ actionV.getCity().name + " " + actionV);
+						break;
+					case DELIVERY:
+						p.appendDelivery(actionV.getTask());
+						System.out.println("adding deliver in "
+								+ actionV.getCity().name + " " + actionV);
+						break;
+					}
+					actionV = nextTaskSol[actionV.getActionIndex()];
 				}
-				current = actionV.getCity();
-				// pickup or deliver task
-				switch (actionV.getType()) {
-				case PICKUP:
-					p.appendPickup(actionV.getTask());
-					System.out.println("adding pickup in "
-							+ actionV.getCity().name + " " + actionV);
-					break;
-				case DELIVERY:
-					p.appendDelivery(actionV.getTask());
-					System.out.println("adding deliver in "
-							+ actionV.getCity().name + " " + actionV);
-					break;
-				}
-				actionV = nextTaskSol[actionV.getActionIndex()];
+				plans.add(p);
 			}
-			plans.add(p);
 		}
 		return plans;
 	}
