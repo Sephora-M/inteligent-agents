@@ -65,16 +65,16 @@ public class GreedyAgent implements AuctionBehavior {
 	public void auctionResult(Task previous, int winner, Long[] bids) {
 		System.out.println("-- auction results --");
 		if (winner == agent.id()) {
-			System.out.println("Greedy agent wins!");
-			System.out.println("New cost is " + mNewCost);
+			System.out.println("Greedy agent (" + agent.id() + ") wins!");
+			System.out.println("New cost of Greedy agent (" + agent.id() + ") is " + mNewCost);
 			mTasks = copy(mTasksWithNewTask);  // Add the win task to our tasks.
 			mCurrentCost = mNewCost;  // Update the cost of our plan.
 			mReward += bids[winner];  // Add the task reward.
-			System.out.println(mTasks.length + " tasks!");
+			System.out.println("Greedy agent (" + agent.id() + ") has " + mTasks.length + " tasks!");
 		} else {
-			System.out.println("Greedy agent losses!");
-			System.out.println("Current cost is " + mCurrentCost);
-			System.out.println(mTasks.length + " tasks!");
+			System.out.println("Greedy agent (" + agent.id() + ") losses!");
+			System.out.println("Current cost of Greedy agent (" + agent.id() + ") is " + mCurrentCost);
+			System.out.println("Greedy agent (" + agent.id() + ") has " + mTasks.length + " tasks!");
 		}
 	}
 	
@@ -93,7 +93,7 @@ public class GreedyAgent implements AuctionBehavior {
 		mSolver = new SLS(mVehicles, mTasksWithNewTask);
 		mSolver.stochLocalSearch((long) (0.05 * (double) TIMEOUT_PLAN));
 		mNewCost = mSolver.getCost();
-		System.out.println("Cost is " + mNewCost);
+		System.out.println("Greedy agent (" + agent.id() + ") has found a route with cost " + mNewCost);
 
 		double marginalCost = mNewCost - mCurrentCost;
 		bid = marginalCost;
@@ -111,8 +111,11 @@ public class GreedyAgent implements AuctionBehavior {
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
-		System.out.println("-- Plan --");
-		System.out.println("Number of tasks = " + tasks.size());
+		System.out.println("-- Plan of agent (" + agent.id() + ") --");
+		System.out.println("Number of tasks of agent (" + agent.id() + ") is " + tasks.size());
+		double gain = mReward - mCurrentCost;
+		System.out.println("Gain of agent (" + agent.id() + ") is " + gain);
+		
 		mSolver = new SLS(vehicles, tasks);
         mSolver.stochLocalSearch((long) (0.1 * (double) TIMEOUT_PLAN));
         
