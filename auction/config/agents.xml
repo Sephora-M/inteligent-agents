@@ -14,5 +14,15 @@
 		<set class-name="template.GreedyAgent"/>
 	</agent>
 	
+	<agent name="auction-truthful">
+		<set class-path="bin/"/>
+		<set class-name="template.TruthfulAgent"/>
+	</agent>
+	
+	<agent name="auction-predictive">
+		<set class-path="bin/"/>
+		<set class-name="template.PercievedPriceAgent"/>
+	</agent>
+	
 	
 </agents>

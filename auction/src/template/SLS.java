@@ -13,7 +13,7 @@ import logist.topology.Topology.City;
 import logist.plan.Plan;
 
 public class SLS {
-	private final double prob = 0.4;
+	private final double prob = 0.5;
 	private final double q = 0.0;
 	private final double r = 0.05; 
 	private Action[] nextTask;
@@ -50,6 +50,10 @@ public class SLS {
 			return minCost;
 		}
 	}
+	
+	public int getNumberOfTasks(){
+		return mNumberOfTasks;
+	}
 
 	public void stochLocalSearch(long timeout) {
 		if (nT != 0) {
@@ -74,9 +78,9 @@ public class SLS {
 					minCost = currentCost;
 				}
 
-				//System.out.println("MIN_COST => " + minCost);
-				System.out.println("Current cost = " + currentCost
-						+ " at iteration " + iter);
+//				System.out.println("MIN_COST => " + minCost);
+//				System.out.println("Current cost = " + currentCost
+//						+ " at iteration " + iter);
 
 				iter++;
 			}
