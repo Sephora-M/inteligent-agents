@@ -152,6 +152,7 @@ public class PercievedPriceAgent implements AuctionBehavior{
 		// if we won last time, check if we can afford to bid a little more than the valuation price
 		if (mWonLast){
 			bid = Math.max( mPredictV*d*0.9, v); // highest between 90% the predition of the adversary and our valuation
+			bid = Math.min(bid, mPredictV*d*0.9); // get close from the left to prediction! 
 		} else {
 			
 			if (mReward >= (v- mPredictV*d*0.95) || round <= 3){ // if we have enough reward to cover for the risk or if still at the beginning of the game
