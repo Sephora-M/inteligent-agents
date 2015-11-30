@@ -13,8 +13,9 @@ import logist.topology.Topology.City;
 import logist.plan.Plan;
 
 public class SLS {
-	private final double prob = 0.8;
+	private final double prob = 0.4;
 	private final double q = 0.0;
+	private final double r = 0.05; 
 	private Action[] nextTask;
 	private Object[] nextTaskDomain;
 	private Action[] nextTaskSol;
@@ -74,15 +75,15 @@ public class SLS {
 				}
 
 				//System.out.println("MIN_COST => " + minCost);
-				//System.out.println("Current cost = " + currentCost
-						//+ " at iteration " + iter);
+				System.out.println("Current cost = " + currentCost
+						+ " at iteration " + iter);
 
 				iter++;
 			}
 			
-			minCost = computeTotalCost(nextTaskSol);
-			/*System.out.println("Cost found = " + minCost
-					+ " after " + iter + " iterations");*/
+//			minCost = computeTotalCost(nextTask);
+			System.out.println("Costs found = " + minCost
+					+ " , " + computeTotalCost(nextTaskSol) );
 		}
 	}
 	
@@ -170,7 +171,7 @@ public class SLS {
 
 		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
 		if (Math.random() > q) {
-			neighbors.addAll(findValidOrderChanges3(mVehicles.get(v)));
+			neighbors.addAll(findValidOrderChanges4(mVehicles.get(v)));
 		}
 
 		return neighbors;
@@ -272,7 +273,7 @@ public class SLS {
 			for (int j = i + 1; j <= length; j++) {
 
 				newNextTask = changingTaskOrder(v, i, j);
-				if (checkConstraints(newNextTask) && Math.random() < 0.05) {
+				if (checkConstraints(newNextTask) && Math.random() < r) {
 					neighbors.add(newNextTask);
 
 					for (int k = 1; k <= length; k++) {
@@ -280,7 +281,7 @@ public class SLS {
 							if (i != k && l != j && newNextTask != null) {
 								tempNeighbors = changingTaskOrder2(newNextTask,
 										v, k, l);
-								if (checkConstraints(tempNeighbors)) {
+								if (checkConstraints(tempNeighbors) && Math.random() < r) {
 									neighbors.add(tempNeighbors);
 								}
 							}
@@ -288,6 +289,33 @@ public class SLS {
 					}
 				}
 			}
+		}
+
+		return neighbors;
+	}
+	
+	private List<Action[]> findValidOrderChanges4(Vehicle v){
+		List<Action[]> neighbors = new ArrayList<Action[]>();
+		
+		int length = 0;
+		Action act = nextTask[vehicleIndex(v)];
+		
+		while (act !=null) {
+			length++;
+			act = nextTask[act.getActionIndex()];
+		}
+
+		int i = (int) (Math.random()*(length+1));
+
+		Action[] newNextTask = null;
+		for (int j=1;j<=length; j++){
+			if(i!=j){
+				newNextTask = changingTaskOrder(v, i,j);
+				if (checkConstraints(newNextTask)){
+					neighbors.add(newNextTask) ;
+				}
+			}
+
 		}
 
 		return neighbors;
@@ -448,6 +476,13 @@ public class SLS {
 	private Action[] changingTaskOrder(Vehicle v, int idxA1, int idxA2) {
 		if (nextTask[vehicleIndex(v)] == null)
 			return null;
+		if (idxA1 == idxA2)
+			return null;
+		if (idxA2 < idxA1){
+			int temp1 = idxA1;
+			idxA1 = idxA2;
+			idxA2 = temp1;
+		}
 
 		Action[] A1 = new Action[nT + nV];
 		for (int i = 0; i < A1.length; i++) {

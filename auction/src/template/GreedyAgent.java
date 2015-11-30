@@ -19,8 +19,7 @@ import logist.topology.Topology;
 import logist.topology.Topology.City;
 
 /**
- * A very simple auction agent that assigns all tasks to its first vehicle and
- * handles them sequentially.
+ * A very simple auction agent that truthfully bids at the valuation price.
  * 
  */
 @SuppressWarnings("unused")
@@ -72,7 +71,7 @@ public class GreedyAgent implements AuctionBehavior {
 			mReward += bids[winner];  // Add the task reward.
 			System.out.println("Greedy agent (" + agent.id() + ") has " + mTasks.length + " tasks!");
 		} else {
-			System.out.println("Greedy agent (" + agent.id() + ") losses!");
+			System.out.println("Greedy agent (" + agent.id() + ") loses!");
 			System.out.println("Current cost of Greedy agent (" + agent.id() + ") is " + mCurrentCost);
 			System.out.println("Greedy agent (" + agent.id() + ") has " + mTasks.length + " tasks!");
 		}
