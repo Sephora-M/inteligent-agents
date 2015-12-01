@@ -24,7 +24,7 @@ import logist.topology.Topology.City;
  */
 @SuppressWarnings("unused")
 public class GreedyAgent implements AuctionBehavior {
-
+	
 	private final static long TIMEOUT_BID = logist.LogistPlatform.getSettings().get(logist.LogistSettings.TimeoutKey.BID);
 	private final static long TIMEOUT_PLAN = logist.LogistPlatform.getSettings().get(logist.LogistSettings.TimeoutKey.PLAN);
 	private final static double MIN_BID =0.0;
@@ -44,13 +44,10 @@ public class GreedyAgent implements AuctionBehavior {
 	private Task[] mTasksWithNewTask;
 	
 	private double tempCost = 0.0;
-	private SLS tempSol =null;
-//	private SLS lastSol =null;
+	private SLS tempSol = null;
 
 	@Override
-	public void setup(Topology topology, TaskDistribution distribution,
-			Agent agent) {
-
+	public void setup(Topology topology, TaskDistribution distribution, Agent agent) {
 		this.topology = topology;
 		this.distribution = distribution;
 		this.agent = agent;
@@ -74,10 +71,7 @@ public class GreedyAgent implements AuctionBehavior {
 			mTasks = copy(mTasksWithNewTask);  // Add the win task to our tasks.
 			mCurrentCost = mNewCost;  // Update the cost of our plan.
 			mReward += bids[winner];  // Add the task reward.
-			
 			tempSol = mSolver; // if we won, we want to remember the solution
-			
-			
 		} else {
 			System.out.println("Greedy agent (" + agent.id() + ") loses!");
 			System.out.println("Current cost of Greedy agent (" + agent.id() + ") is " + mCurrentCost);
@@ -103,22 +97,16 @@ public class GreedyAgent implements AuctionBehavior {
 		mNewCost = mSolver.getCost();
 		System.out.println("Greedy agent (" + agent.id() + ") has found a route with cost " + mNewCost);
 		
-		
-		
 		double marginalCost = mNewCost - mCurrentCost;
 		
-		if (marginalCost<0.0){
+		if (marginalCost < 0.0) {
 			marginalCost = MIN_BID;
 		}
 		bid = marginalCost;
 		
-		if (bid == 0) {
-			//mSolver.printSolution(null);
-		}
-		
 		System.out.println("Greedy agent (" + agent.id() + ") bids " + (long) Math.round(bid));
         
-        System.out.println("Planing Time = "+-(time_start-System.currentTimeMillis()) +"ms");
+        System.out.println("Planing Time = "+-(time_start-System.currentTimeMillis()) + "ms");
 
 		return (long) Math.round(bid);
 	}
@@ -135,24 +123,28 @@ public class GreedyAgent implements AuctionBehavior {
 		mSolver = new SLS(vehicles, tasks);
 		mSolver.stochLocalSearch((long) (0.1 * (double) TIMEOUT_PLAN));
 
-		if (tempSol != null) {System.out.println("Current cost of agent (" + agent.id() + ") is " +tempSol.getCost());
-		System.out.println("number of tasks = "+tempSol.getNumberOfTasks());}
-		System.out.println("Recomputed final cost of agent (" + agent.id() + ") is " +mSolver.getCost());
+		if (tempSol != null) {
+			System.out.println("Current cost of agent (" + agent.id() + ") is " + tempSol.getCost());
+			System.out.println("number of tasks = "+tempSol.getNumberOfTasks());
+		}
+		System.out.println("Recomputed final cost of agent (" + agent.id() + ") is " + mSolver.getCost());
 		System.out.println("number of tasks = "+mSolver.getNumberOfTasks());
 
-		if (tempSol != null) System.out.println(tempSol.generatePlans());
+		if (tempSol != null) {
+			System.out.println(tempSol.generatePlans());
+		}
 
 		System.out.println(mSolver.generatePlans());
 
-		if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
+		if (tempSol != null && mSolver.getCost() > tempSol.getCost()) {
 			plans = tempSol.generatePlans();
-		}
-		else {
+		} else {
 			plans = mSolver.generatePlans();
 		}
 
-		while (plans.size() < vehicles.size())
+		while (plans.size() < vehicles.size()) {
 			plans.add(Plan.EMPTY);
+		}
 
 		return plans;
 	}
