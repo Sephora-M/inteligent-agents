@@ -27,8 +27,8 @@ public class GreedyAgent implements AuctionBehavior {
 	
 	private final static long TIMEOUT_BID = logist.LogistPlatform.getSettings().get(logist.LogistSettings.TimeoutKey.BID);
 	private final static long TIMEOUT_PLAN = logist.LogistPlatform.getSettings().get(logist.LogistSettings.TimeoutKey.PLAN);
-	private final static double MIN_BID =0.0;
-	private Topology topology;
+	private final static double MIN_BID = 0.0;
+	
 	private TaskDistribution distribution;
 	private Agent agent;
 	private Random random;
@@ -48,7 +48,6 @@ public class GreedyAgent implements AuctionBehavior {
 
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution, Agent agent) {
-		this.topology = topology;
 		this.distribution = distribution;
 		this.agent = agent;
 		this.vehicle = agent.vehicles().get(0);
