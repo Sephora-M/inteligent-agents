@@ -14,8 +14,8 @@ import logist.plan.Plan;
 
 public class SLS {
 	
-	private final static int MAX_ITER = 10000;
-	private final double prob = 0.3;
+	private final static int MAX_ITER = 100000;
+	private final double prob = 0.5;
 	private static Action[] nextTask;
 	private static Object[] nextTaskDomain;
 	private List<Vehicle> mVehicles;
@@ -116,7 +116,7 @@ public class SLS {
 			v = (int) (Math.random()*mVehicles.size());
 		}
 		
-		neighbors.addAll(findValidOrderChanges3(mVehicles.get(v)));
+		neighbors.addAll(findValidOrderChanges4(mVehicles.get(v)));
 		neighbors.addAll(findValidVehicleChanges(mVehicles.get(v)));
 
 		return neighbors;
@@ -148,6 +148,33 @@ public class SLS {
 			}
 		}
 		
+		return neighbors;
+	}
+	
+	private List<Action[]> findValidOrderChanges4(Vehicle v){
+		List<Action[]> neighbors = new ArrayList<Action[]>();
+		
+		int length = 0;
+		Action act = nextTask[vehicleIndex(v)];
+		
+		while (act !=null) {
+			length++;
+			act = nextTask[act.getActionIndex()];
+		}
+
+		int i = (int) (Math.random()*(length+1));
+
+		Action[] newNextTask = null;
+		for (int j=1;j<=length; j++){
+			if(i!=j){
+				newNextTask = changingTaskOrder(v, i,j);
+				if (checkConstraints(newNextTask)){
+					neighbors.add(newNextTask) ;
+				}
+			}
+
+		}
+
 		return neighbors;
 	}
 	
@@ -216,16 +243,16 @@ private List<Action[]> findValidOrderChanges3(Vehicle v){
 			if (checkConstraints(newNextTask) && Math.random()<0.05){
 				neighbors.add(newNextTask) ;
 
-					for (int k=1;k<=length; k++){
-						for (int l=k+1;l<=length; l++){
-							if (i!=k && l!=j && newNextTask != null ){
-								tempNeighbors = changingTaskOrder2(newNextTask,v,k,l);
-								if (checkConstraints(tempNeighbors)){
-									neighbors.add(tempNeighbors) ;
-								}
+				for (int k=1;k<=length; k++){
+					for (int l=k+1;l<=length; l++){
+						if (i!=k && l!=j && newNextTask != null ){
+							tempNeighbors = changingTaskOrder2(newNextTask,v,k,l);
+							if (checkConstraints(tempNeighbors) && Math.random()<1){
+								neighbors.add(tempNeighbors) ;
 							}
 						}
 					}
+				}
 				}
 			}
 		}
@@ -362,7 +389,14 @@ private List<Action[]> findValidOrderChanges3(Vehicle v){
 	private Action[] changingTaskOrder(Vehicle v, int idxA1, int idxA2){
 		if (nextTask[vehicleIndex(v)] == null)
 			return null;
-		
+		if (idxA1 == idxA2)
+			return null;
+		if (idxA2 < idxA1){
+			int temp1 = idxA1;
+			idxA1 = idxA2;
+			idxA2 = temp1;
+		}
+			
 		Action[] A1 = new Action[nT+nV];
 		for(int i=0; i<A1.length;i++){
 			if (nextTask[i] != null)

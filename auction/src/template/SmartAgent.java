@@ -17,7 +17,7 @@ import logist.topology.Topology;
  * new bid (predict adversary lowest bids by averaging over past prices)
  *
  */
-public class PercievedPriceAgent implements AuctionBehavior{
+public class SmartAgent implements AuctionBehavior{
 
 	private final static long TIMEOUT_BID = logist.LogistPlatform.getSettings().get(logist.LogistSettings.TimeoutKey.BID);
 	private final static long TIMEOUT_PLAN = logist.LogistPlatform.getSettings().get(logist.LogistSettings.TimeoutKey.PLAN);
@@ -27,11 +27,13 @@ public class PercievedPriceAgent implements AuctionBehavior{
 	private double mCurrentCost = 0.0;
 	private double mNewCost = 0.0;
 	private long mReward = 0;
+	private SLS mSolver;
 	private List<Vehicle> mVehicles;
 	private Task[] mTasks;
 	private ArrayList<Task> mLostTasks = new ArrayList<Task>();
 	private Task[] mTasksWithNewTask;
 	private int round = 0;
+	private SLS tempSol =null;
 	
 	private double d = 1.0; // average over past lost bids of b_i/b, where b is our bid and b_i is the bid of the winner
 	//private double dWin = 1.0; // ratio b_i/b for the last win
@@ -66,6 +68,8 @@ public class PercievedPriceAgent implements AuctionBehavior{
 			mCurrentCost = mNewCost;  // Update the cost of our plan.
 			mReward += bids[winner];  // Add the task reward.
 			
+			tempSol = mSolver;
+			
 			double looser = Double.POSITIVE_INFINITY;
 			for (int i = 0; i < bids.length; i++) {
 				if (i != winner && looser > bids[i]) {
@@ -98,8 +102,8 @@ public class PercievedPriceAgent implements AuctionBehavior{
 		}
 		mTasksWithNewTask[mTasks.length] = task;
 
-		SLS mSolver = new SLS(mVehicles, mTasksWithNewTask);
-		mSolver.stochLocalSearch((long) (0.05 * (double) TIMEOUT_BID));
+		mSolver = new SLS(mVehicles, mTasksWithNewTask);
+		mSolver.stochLocalSearch((long) (0.059 * (double) TIMEOUT_BID));
 		mNewCost = mSolver.getCost();
 		System.out.println("Smart agent (" + agent.id() + ") has found a route with cost " + mNewCost);
 
@@ -108,6 +112,7 @@ public class PercievedPriceAgent implements AuctionBehavior{
 		if (v < 0.0) {
 			v = MIN_BID;
 		}
+		v = v*1.1;
 		
 		// predicting what the adversary should bid if it is truthful
 		Task[] lost = new Task[mLostTasks.size()+1];
@@ -118,7 +123,7 @@ public class PercievedPriceAgent implements AuctionBehavior{
 		lost[mLostTasks.size()] = task;
 
 		SLS mPredictSol = new SLS(mVehicles, lost);
-		mPredictSol.stochLocalSearch((long)(0.02* (double) TIMEOUT_BID));
+		mPredictSol.stochLocalSearch((long)(0.039* (double) TIMEOUT_BID));
 		mPredictNewCost = mPredictSol.getCost();
 
 		mPredictV = mPredictNewCost - mPredictCurrentCost;
@@ -132,8 +137,9 @@ public class PercievedPriceAgent implements AuctionBehavior{
 			bid = Math.max(mPredictV*d*0.9, v); // highest between 90% the prediction of the adversary and our valuation
 			bid = Math.min(bid, mPredictV*d*0.9); // get close from the left to prediction!
 		} else {
-			if (mReward >= (v - mPredictV*d*0.95) || round <= 3) { // if we have enough reward to cover for the risk or if still at the beginning of the game
-				bid = mPredictV*d*0.95; // if we lost, we bid 95% of the predicted best bid (which is v*d) if we can afford it
+			
+			if (mReward >= (v- mPredictV*d*0.95) || round <= 1){ // if we have enough reward to cover for the risk or if still at the beginning of the game
+			bid = mPredictV*d*0.95; // if we lost, we bid 95% of the predicted best bid (which is v*d) if we can afford it
 			} else {
 				bid = v;
 			}
@@ -147,19 +153,37 @@ public class PercievedPriceAgent implements AuctionBehavior{
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
+		List<Plan> plans;
+		
 		System.out.println("-- Plan of agent (" + agent.id() + ") --");
 		System.out.println("Number of tasks of agent (" + agent.id() + ") is " + tasks.size());
 		double gain = mReward - mCurrentCost;
 		System.out.println("Gain of agent (" + agent.id() + ") is " + gain);
 		
-		SLS mSolver = new SLS(vehicles, tasks);
-        mSolver.stochLocalSearch((long) (0.1 * (double) TIMEOUT_PLAN));
-        
-        List<Plan> plans = mSolver.generatePlans();
+		mSolver = new SLS(vehicles, tasks);
+        mSolver.stochLocalSearch((long) (0.98 * (double) TIMEOUT_PLAN));
+        plans = mSolver.generatePlans();
         while (plans.size() < vehicles.size()) {
 			plans.add(Plan.EMPTY);
         }
-
+        if (tempSol != null) {System.out.println("Current cost of agent (" + agent.id() + ") is " +tempSol.getCost());
+        System.out.println("number of tasks = "+tempSol.getNumberOfTasks());}
+        System.out.println("Recomputed final cost of agent (" + agent.id() + ") is " +mSolver.getCost());
+        System.out.println("number of tasks = "+mSolver.getNumberOfTasks());
+        
+        if (tempSol != null) System.out.println(tempSol.generatePlans());        
+//        System.out.println(mSolver.generatePlans());
+        
+//        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
+//        	plans = tempSol.generatePlans();
+//        }
+//        else {
+        	plans = mSolver.generatePlans();
+//        }
+        
+        while (plans.size() < vehicles.size())
+        	plans.add(Plan.EMPTY);
+        
 		return plans;
 	}
 	

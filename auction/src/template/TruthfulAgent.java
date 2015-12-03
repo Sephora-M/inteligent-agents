@@ -99,7 +99,13 @@ public class TruthfulAgent implements AuctionBehavior {
 		
 		double marginalCost = mNewCost - mCurrentCost;
 		
+<<<<<<< Updated upstream
 		if (marginalCost < 0.0) {
+=======
+		marginalCost *= 1.1;
+		
+		if (marginalCost<0.0){
+>>>>>>> Stashed changes
 			marginalCost = MIN_BID;
 		}
 		bid = marginalCost;
@@ -121,7 +127,7 @@ public class TruthfulAgent implements AuctionBehavior {
 		System.out.println("Gain of agent (" + agent.id() + ") is " + gain);
 		
 		mSolver = new SLS(vehicles, tasks);
-        mSolver.stochLocalSearch((long) (0.1 * (double) TIMEOUT_PLAN));
+        mSolver.stochLocalSearch((long) (0.3 * (double) TIMEOUT_PLAN));
         
         if (tempSol != null) {
         	System.out.println("Current cost of agent (" + agent.id() + ") is " + tempSol.getCost());
@@ -136,11 +142,18 @@ public class TruthfulAgent implements AuctionBehavior {
         
         System.out.println(mSolver.generatePlans());
 
+<<<<<<< Updated upstream
         if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
         	plans = tempSol.generatePlans();
         } else {
+=======
+//        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
+//        	plans = tempSol.generatePlans();
+//        }
+//        else {
+>>>>>>> Stashed changes
         	plans = mSolver.generatePlans();
-        }
+//        }
         
         while (plans.size() < vehicles.size()) {
         	plans.add(Plan.EMPTY);
