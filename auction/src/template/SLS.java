@@ -1,6 +1,7 @@
 package template;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -726,6 +727,43 @@ public class SLS {
 						break;
 					case DELIVERY:
 						p.appendDelivery(actionV.getTask());
+						System.out.println("adding deliver in "
+								+ actionV.getCity().name + " " + actionV);
+						break;
+					}
+					actionV = nextTaskSol[actionV.getActionIndex()];
+				}
+				plans.add(p);
+			}
+		}
+		return plans;
+	}
+	
+	public List<Plan> generatePlans(HashMap<Integer,Task> tasksMap) {
+		List<Plan> plans = new ArrayList<Plan>();
+
+		if (nextTaskSol != null) {
+			for (int i = nT; i < nextTaskSol.length; i++) {
+				Vehicle v = (Vehicle) nextTaskDomain[i];
+				System.out.println(v.name());
+				City current = v.getCurrentCity();
+				Plan p = new Plan(current);
+				Action actionV = nextTaskSol[i];
+				while (actionV != null) {
+					// move to next action's city
+					for (City city : current.pathTo(actionV.getCity())) {
+						p.appendMove(city);
+					}
+					current = actionV.getCity();
+					// pickup or deliver task
+					switch (actionV.getType()) {
+					case PICKUP:
+						p.appendPickup(tasksMap.get(actionV.getTask().id));
+						System.out.println("adding pickup in "
+								+ actionV.getCity().name + " " + actionV);
+						break;
+					case DELIVERY:
+						p.appendDelivery(tasksMap.get(actionV.getTask().id));
 						System.out.println("adding deliver in "
 								+ actionV.getCity().name + " " + actionV);
 						break;

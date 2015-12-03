@@ -1,6 +1,7 @@
 package template;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import logist.agent.Agent;
@@ -112,7 +113,6 @@ public class SmartAgent implements AuctionBehavior{
 		if (v < 0.0) {
 			v = MIN_BID;
 		}
-		v = v*1.1;
 		
 		// predicting what the adversary should bid if it is truthful
 		Task[] lost = new Task[mLostTasks.size()+1];
@@ -128,17 +128,21 @@ public class SmartAgent implements AuctionBehavior{
 
 		mPredictV = mPredictNewCost - mPredictCurrentCost;
 		
+		System.out.println("guess for adversary = "+ mPredictV);
+		
 		if (mPredictV < 0.0) {
 			mPredictV = MIN_BID;
 		}
 		
-		// if we won last time, check if we can afford to bid a little more than the valuation price
+		
 		if (mWonLast){
-			bid = Math.max(mPredictV*d*0.9, v); // highest between 90% the prediction of the adversary and our valuation
-			bid = Math.min(bid, mPredictV*d*0.9); // get close from the left to prediction!
+			bid = Math.max( mPredictV*d*0.9, v); // highest between 90% the predition of the adversary and our valuation
+			
+			if(mReward >= (v- mPredictV*d*0.95))
+			bid = Math.min(bid, mPredictV*d*0.9); // get close from the left to prediction! 
 		} else {
 			
-			if (mReward >= (v- mPredictV*d*0.95) || round <= 1){ // if we have enough reward to cover for the risk or if still at the beginning of the game
+			if (mReward >= (v- mPredictV*d*0.95)){ // if we have enough reward to cover for the risk or if still at the beginning of the game
 			bid = mPredictV*d*0.95; // if we lost, we bid 95% of the predicted best bid (which is v*d) if we can afford it
 			} else {
 				bid = v;
@@ -155,31 +159,34 @@ public class SmartAgent implements AuctionBehavior{
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
 		List<Plan> plans;
 		
+		HashMap<Integer,Task> tasksMap = new HashMap<Integer,Task>(); 
+		
+		for (Task t : tasks){
+			tasksMap.put(t.id, t);
+		}
+		
 		System.out.println("-- Plan of agent (" + agent.id() + ") --");
 		System.out.println("Number of tasks of agent (" + agent.id() + ") is " + tasks.size());
 		double gain = mReward - mCurrentCost;
 		System.out.println("Gain of agent (" + agent.id() + ") is " + gain);
 		
 		mSolver = new SLS(vehicles, tasks);
-        mSolver.stochLocalSearch((long) (0.98 * (double) TIMEOUT_PLAN));
-        plans = mSolver.generatePlans();
-        while (plans.size() < vehicles.size()) {
-			plans.add(Plan.EMPTY);
-        }
+        mSolver.stochLocalSearch((long) (0.098 * (double) TIMEOUT_PLAN));
+        
+        
+      
         if (tempSol != null) {System.out.println("Current cost of agent (" + agent.id() + ") is " +tempSol.getCost());
         System.out.println("number of tasks = "+tempSol.getNumberOfTasks());}
         System.out.println("Recomputed final cost of agent (" + agent.id() + ") is " +mSolver.getCost());
         System.out.println("number of tasks = "+mSolver.getNumberOfTasks());
+       
         
-        if (tempSol != null) System.out.println(tempSol.generatePlans());        
-//        System.out.println(mSolver.generatePlans());
-        
-//        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
-//        	plans = tempSol.generatePlans();
-//        }
-//        else {
+        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
+        	plans = tempSol.generatePlans(tasksMap);
+        }
+        else {
         	plans = mSolver.generatePlans();
-//        }
+        }
         
         while (plans.size() < vehicles.size())
         	plans.add(Plan.EMPTY);

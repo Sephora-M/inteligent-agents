@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<agents>
+	<!-- An auto-generated list of agents and their behavior classes -->
+	<!--  - jar directory : agents/ -->
+	<!--  - generated on  : Tue Dec 01 17:10:43 CET 2015 -->
+	<agent name="YourName">
+		<set class-path="bin"/>
+		<set class-name="template.AuctionTemplate"/>
+	</agent>
+	<agent name="YourName2">
+		<set class-path="bin"/>
+		<set class-name="template.GreedyAgent"/>
+	</agent>
+	<agent name="YourName3">
+		<set class-path="bin"/>
+		<set class-name="template.PercievedPriceAgent"/>
+	</agent>
+	<agent name="YourName4">
+		<set class-path="bin"/>
+		<set class-name="template.TruthfulAgent"/>
+	</agent>
+	<agent name="NaiveAgent">
+		<set class-path="agents/NaiveAgent.jar"/>
+		<set class-name="template.AuctionTemplate"/>
+	</agent>
+	<agent name="TruthfulAgent">
+		<set class-path="agents/TruthfulAgent.jar"/>
+		<set class-name="template.TruthfulAgent"/>
+	</agent>
+</agents>

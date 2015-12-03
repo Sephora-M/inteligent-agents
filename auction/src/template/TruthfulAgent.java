@@ -2,6 +2,7 @@ package template;
 
 //the list of imports
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -99,7 +100,6 @@ public class TruthfulAgent implements AuctionBehavior {
 		
 		double marginalCost = mNewCost - mCurrentCost;
 		
-		marginalCost *= 1.1;
 		
 		if (marginalCost<0.0){
 			marginalCost = MIN_BID;
@@ -117,37 +117,37 @@ public class TruthfulAgent implements AuctionBehavior {
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
 		List<Plan> plans;
 		
+		HashMap<Integer,Task> tasksMap = new HashMap<Integer,Task>(); 
+		
+		for (Task t : tasks){
+			tasksMap.put(t.id, t);
+		}
+		
 		System.out.println("-- Plan of agent (" + agent.id() + ") --");
 		System.out.println("Number of tasks of agent (" + agent.id() + ") is " + tasks.size());
 		double gain = mReward - mCurrentCost;
 		System.out.println("Gain of agent (" + agent.id() + ") is " + gain);
 		
 		mSolver = new SLS(vehicles, tasks);
-        mSolver.stochLocalSearch((long) (0.3 * (double) TIMEOUT_PLAN));
+        mSolver.stochLocalSearch((long) (0.098 * (double) TIMEOUT_PLAN));
         
-        if (tempSol != null) {
-        	System.out.println("Current cost of agent (" + agent.id() + ") is " + tempSol.getCost());
-        	System.out.println("number of tasks = " + tempSol.getNumberOfTasks());
+        
+      
+        if (tempSol != null) {System.out.println("Current cost of agent (" + agent.id() + ") is " +tempSol.getCost());
+        System.out.println("number of tasks = "+tempSol.getNumberOfTasks());}
+        System.out.println("Recomputed final cost of agent (" + agent.id() + ") is " +mSolver.getCost());
+        System.out.println("number of tasks = "+mSolver.getNumberOfTasks());
+       
+        
+        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
+        	plans = tempSol.generatePlans(tasksMap);
         }
-        System.out.println("Recomputed final cost of agent (" + agent.id() + ") is " + mSolver.getCost());
-        System.out.println("number of tasks = " + mSolver.getNumberOfTasks());
-        
-        if (tempSol != null) {
-        	System.out.println(tempSol.generatePlans());
-        }
-        
-        System.out.println(mSolver.generatePlans());
-
-//        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
-//        	plans = tempSol.generatePlans();
-//        }
-//        else {
+        else {
         	plans = mSolver.generatePlans();
-//        }
-        
-        while (plans.size() < vehicles.size()) {
-        	plans.add(Plan.EMPTY);
         }
+        
+        while (plans.size() < vehicles.size())
+        	plans.add(Plan.EMPTY);
         
 		return plans;
 	}
