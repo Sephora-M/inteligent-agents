@@ -1,0 +1,70 @@
+11:35:24.866 FINE | Run command: java -Xmx1024m -classpath logist/logist.jar logist.LogistPlatform -o tournament/MyEvent/auction-NaiveAgent-SmartAgent.xml -a tournament/MyEvent/agents.xml config/auction.xml NaiveAgent SmartAgent
+11:35:25.009 CONFIG | Reading config/auction.xml
+11:35:25.076 CONFIG | Reading config/settings_auction.xml
+11:35:25.232 CONFIG | Reading config/topology/england.xml
+11:35:25.260 CONFIG | Reading tournament/MyEvent/agents.xml
+11:35:25.322 CONFIG | Naive agent (0) bids 2751
+11:35:25.323 CONFIG | -- AskPrice --
+11:35:43.204 CONFIG | Costs found = 2766.0
+11:35:43.204 CONFIG | Smart agent (1) has found a route with cost 2766.0
+11:35:55.021 CONFIG | Costs found = 2766.0
+11:35:55.021 CONFIG | Smart agent (1) bids 2489
+11:35:55.021 CONFIG | Planing Time = 29698ms
+11:35:55.021 CONFIG | Naive agent (0) bids 2700
+11:35:55.022 CONFIG | -- auction results --
+11:35:55.022 CONFIG | Smart agent (1) wins!
+11:35:55.022 CONFIG | New cost of Smart agent (1) is 2766.0
+11:35:55.022 CONFIG | Smart agent (1) has 1 tasks!
+11:35:55.022 CONFIG | Smart agent (1) current reward : 2489
+11:35:55.022 CONFIG | -- AskPrice --
+11:36:12.899 CONFIG | Costs found = 5148.0
+11:36:12.899 CONFIG | Smart agent (1) has found a route with cost 5148.0
+11:36:24.716 CONFIG | Costs found = 3928.0
+11:36:24.716 CONFIG | Smart agent (1) bids 3516
+11:36:24.717 CONFIG | Planing Time = 29694ms
+11:36:24.717 CONFIG | Naive agent wins!
+11:36:24.717 CONFIG | Naive agent (0) bids 2967
+11:36:24.717 CONFIG | -- auction results --
+11:36:24.717 CONFIG | Smart agent (1) loses!
+11:36:24.717 CONFIG | Current cost of Smart agent (1) is 2766.0
+11:36:24.717 CONFIG | Smart agent (1) has 1 tasks!
+11:36:24.717 CONFIG | Smart agent (1) current reward : 2489
+11:36:24.717 CONFIG | -- AskPrice --
+11:36:42.594 CONFIG | Costs found = 5514.0
+11:36:42.594 CONFIG | Smart agent (1) has found a route with cost 5514.0
+11:36:54.411 CONFIG | Costs found = 5078.0
+11:36:54.411 CONFIG | Smart agent (1) bids 919
+11:36:54.411 CONFIG | Planing Time = 29694ms
+11:36:54.411 CONFIG | Naive agent (0) bids 3281
+11:36:54.411 CONFIG | -- auction results --
+11:36:54.412 CONFIG | Smart agent (1) wins!
+11:36:54.412 CONFIG | New cost of Smart agent (1) is 5514.0
+11:36:54.412 CONFIG | Smart agent (1) has 2 tasks!
+11:36:54.412 CONFIG | Smart agent (1) current reward : 3408
+11:36:54.412 CONFIG | -- AskPrice --
+11:37:12.289 CONFIG | Costs found = 8344.0
+11:37:12.289 CONFIG | Smart agent (1) has found a route with cost 8344.0
+11:37:24.106 CONFIG | Costs found = 6758.0
+11:37:24.106 CONFIG | Smart agent (1) bids 3618
+11:37:24.106 CONFIG | Planing Time = 29694ms
+11:37:24.106 CONFIG | Naive agent wins!
+11:37:24.106 CONFIG | Naive agent (0) bids 3834
+11:37:24.106 CONFIG | -- auction results --
+11:37:24.106 CONFIG | Smart agent (1) loses!
+11:37:24.106 CONFIG | Current cost of Smart agent (1) is 5514.0
+11:37:24.107 CONFIG | Smart agent (1) has 2 tasks!
+11:37:24.107 CONFIG | Smart agent (1) current reward : 3408
+11:37:24.107 CONFIG | -- AskPrice --
+11:37:41.983 CONFIG | Costs found = 7896.0
+11:37:41.983 CONFIG | Smart agent (1) has found a route with cost 7896.0
+11:37:53.800 CONFIG | Costs found = 10384.0
+11:37:53.800 CONFIG | Smart agent (1) bids 4669
+11:37:53.800 CONFIG | Planing Time = 29694ms
+11:37:53.800 CONFIG | Naive agent wins!
+11:37:53.800 CONFIG | Naive agent (0) bids 623
+11:37:53.801 CONFIG | -- auction results --
+11:37:53.801 CONFIG | Smart agent (1) loses!
+11:37:53.801 CONFIG | Current cost of Smart agent (1) is 5514.0
+11:37:53.801 CONFIG | Smart agent (1) has 2 tasks!
+11:37:53.801 CONFIG | Smart agent (1) current reward : 3408
+11:37:53.801 CONFIG | -- AskPrice --
