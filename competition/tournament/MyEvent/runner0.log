@@ -68,3 +68,186 @@
 11:37:53.801 CONFIG | Smart agent (1) has 2 tasks!
 11:37:53.801 CONFIG | Smart agent (1) current reward : 3408
 11:37:53.801 CONFIG | -- AskPrice --
+11:38:11.678 CONFIG | Costs found = 7705.0
+11:38:11.678 CONFIG | Smart agent (1) has found a route with cost 7705.0
+11:38:23.495 CONFIG | Costs found = 11534.0
+11:38:23.495 CONFIG | Smart agent (1) bids 1416
+11:38:23.495 CONFIG | Planing Time = 29694ms
+11:38:23.495 CONFIG | Naive agent wins!
+11:38:23.496 CONFIG | Naive agent (0) bids 2599
+11:38:23.496 CONFIG | -- auction results --
+11:38:23.496 CONFIG | Smart agent (1) loses!
+11:38:23.496 CONFIG | Current cost of Smart agent (1) is 5514.0
+11:38:23.496 CONFIG | Smart agent (1) has 2 tasks!
+11:38:23.496 CONFIG | Smart agent (1) current reward : 3408
+11:38:23.496 CONFIG | -- AskPrice --
+11:38:41.373 CONFIG | Costs found = 7844.0
+11:38:41.373 CONFIG | Smart agent (1) has found a route with cost 7844.0
+11:38:53.190 CONFIG | Costs found = 13289.0
+11:38:53.190 CONFIG | Smart agent (1) bids 1951
+11:38:53.190 CONFIG | Planing Time = 29694ms
+11:38:53.191 CONFIG | Naive agent (0) bids 1431
+11:38:53.191 CONFIG | -- auction results --
+11:38:53.191 CONFIG | Smart agent (1) wins!
+11:38:53.191 CONFIG | New cost of Smart agent (1) is 7844.0
+11:38:53.191 CONFIG | Smart agent (1) has 3 tasks!
+11:38:53.191 CONFIG | Smart agent (1) current reward : 5359
+11:38:53.191 CONFIG | -- AskPrice --
+11:39:11.068 CONFIG | Costs found = 9973.0
+11:39:11.068 CONFIG | Smart agent (1) has found a route with cost 9973.0
+11:39:22.885 CONFIG | Costs found = 10959.0
+11:39:22.885 CONFIG | Smart agent (1) bids 1
+11:39:22.885 CONFIG | Planing Time = 29694ms
+11:39:22.886 CONFIG | Naive agent (0) bids 4106
+11:39:22.886 CONFIG | -- auction results --
+11:39:22.886 CONFIG | Smart agent (1) wins!
+11:39:22.886 CONFIG | New cost of Smart agent (1) is 9973.0
+11:39:22.886 CONFIG | Smart agent (1) has 4 tasks!
+11:39:22.886 CONFIG | Smart agent (1) current reward : 5360
+11:39:22.886 CONFIG | -- AskPrice --
+11:39:40.763 CONFIG | Costs found = 14052.0
+11:39:40.763 CONFIG | Smart agent (1) has found a route with cost 14052.0
+11:39:52.580 CONFIG | Costs found = 10959.0
+11:39:52.580 CONFIG | Smart agent (1) bids 162
+11:39:52.580 CONFIG | Planing Time = 29694ms
+11:39:52.580 CONFIG | Naive agent (0) bids 1742
+11:39:52.580 CONFIG | -- auction results --
+11:39:52.580 CONFIG | Smart agent (1) wins!
+11:39:52.580 CONFIG | New cost of Smart agent (1) is 14052.0
+11:39:52.581 CONFIG | Smart agent (1) has 5 tasks!
+11:39:52.581 CONFIG | Smart agent (1) current reward : 5522
+11:39:52.581 CONFIG | -- AskPrice --
+11:40:10.457 CONFIG | Costs found = 16500.0
+11:40:10.457 CONFIG | Smart agent (1) has found a route with cost 16500.0
+11:40:22.274 CONFIG | Costs found = 12659.0
+11:40:22.274 CONFIG | Smart agent (1) bids 623869
+11:40:22.274 CONFIG | Planing Time = 29694ms
+11:40:22.274 CONFIG | Naive agent wins!
+11:40:22.274 CONFIG | Naive agent (0) bids 2717
+11:40:22.274 CONFIG | -- auction results --
+11:40:22.275 CONFIG | Smart agent (1) loses!
+11:40:22.275 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:40:22.275 CONFIG | Smart agent (1) has 5 tasks!
+11:40:22.275 CONFIG | Smart agent (1) current reward : 5522
+11:40:22.275 CONFIG | -- AskPrice --
+11:40:40.152 CONFIG | Costs found = 14627.0
+11:40:40.152 CONFIG | Smart agent (1) has found a route with cost 14627.0
+11:40:51.969 CONFIG | Costs found = 13333.0
+11:40:51.969 CONFIG | Smart agent (1) bids 355178
+11:40:51.969 CONFIG | Planing Time = 29694ms
+11:40:51.969 CONFIG | Naive agent wins!
+11:40:51.969 CONFIG | Naive agent (0) bids 3163
+11:40:51.969 CONFIG | -- auction results --
+11:40:51.970 CONFIG | Smart agent (1) loses!
+11:40:51.970 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:40:51.970 CONFIG | Smart agent (1) has 5 tasks!
+11:40:51.970 CONFIG | Smart agent (1) current reward : 5522
+11:40:51.970 CONFIG | -- AskPrice --
+11:41:09.846 CONFIG | Costs found = 16431.0
+11:41:09.846 CONFIG | Smart agent (1) has found a route with cost 16431.0
+11:41:21.663 CONFIG | Costs found = 16163.0
+11:41:21.663 CONFIG | Smart agent (1) bids 1356735
+11:41:21.663 CONFIG | Planing Time = 29694ms
+11:41:21.663 CONFIG | Naive agent wins!
+11:41:21.663 CONFIG | Naive agent (0) bids 2258
+11:41:21.663 CONFIG | -- auction results --
+11:41:21.663 CONFIG | Smart agent (1) loses!
+11:41:21.663 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:41:21.663 CONFIG | Smart agent (1) has 5 tasks!
+11:41:21.663 CONFIG | Smart agent (1) current reward : 5522
+11:41:21.663 CONFIG | -- AskPrice --
+11:41:39.540 CONFIG | Costs found = 15676.5
+11:41:39.540 CONFIG | Smart agent (1) has found a route with cost 15676.5
+11:41:51.357 CONFIG | Costs found = 17514.0
+11:41:51.357 CONFIG | Smart agent (1) bids 593831
+11:41:51.357 CONFIG | Planing Time = 29694ms
+11:41:51.357 CONFIG | Naive agent wins!
+11:41:51.357 CONFIG | Naive agent (0) bids 2088
+11:41:51.357 CONFIG | -- auction results --
+11:41:51.357 CONFIG | Smart agent (1) loses!
+11:41:51.357 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:41:51.357 CONFIG | Smart agent (1) has 5 tasks!
+11:41:51.357 CONFIG | Smart agent (1) current reward : 5522
+11:41:51.357 CONFIG | -- AskPrice --
+11:42:09.234 CONFIG | Costs found = 16230.5
+11:42:09.234 CONFIG | Smart agent (1) has found a route with cost 16230.5
+11:42:21.051 CONFIG | Costs found = 19377.5
+11:42:21.051 CONFIG | Smart agent (1) bids 756320
+11:42:21.051 CONFIG | Planing Time = 29694ms
+11:42:21.051 CONFIG | Naive agent wins!
+11:42:21.053 CONFIG | Naive agent (0) bids 4218
+11:42:21.053 CONFIG | -- auction results --
+11:42:21.053 CONFIG | Smart agent (1) loses!
+11:42:21.053 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:42:21.053 CONFIG | Smart agent (1) has 5 tasks!
+11:42:21.053 CONFIG | Smart agent (1) current reward : 5522
+11:42:21.053 CONFIG | -- AskPrice --
+11:42:38.928 CONFIG | Costs found = 16628.0
+11:42:38.928 CONFIG | Smart agent (1) has found a route with cost 16628.0
+11:42:50.745 CONFIG | Costs found = 25880.5
+11:42:50.745 CONFIG | Smart agent (1) bids 2451278
+11:42:50.745 CONFIG | Planing Time = 29694ms
+11:42:50.746 CONFIG | Naive agent wins!
+11:42:50.746 CONFIG | Naive agent (0) bids 1961
+11:42:50.746 CONFIG | -- auction results --
+11:42:50.746 CONFIG | Smart agent (1) loses!
+11:42:50.746 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:42:50.746 CONFIG | Smart agent (1) has 5 tasks!
+11:42:50.746 CONFIG | Smart agent (1) current reward : 5522
+11:42:50.746 CONFIG | -- AskPrice --
+11:43:08.623 CONFIG | Costs found = 15072.0
+11:43:08.623 CONFIG | Smart agent (1) has found a route with cost 15072.0
+11:43:20.440 CONFIG | Costs found = 26215.5
+11:43:20.440 CONFIG | Smart agent (1) bids 117872
+11:43:20.440 CONFIG | Planing Time = 29694ms
+11:43:20.440 CONFIG | Naive agent wins!
+11:43:20.440 CONFIG | Naive agent (0) bids 1981
+11:43:20.440 CONFIG | -- auction results --
+11:43:20.440 CONFIG | Smart agent (1) loses!
+11:43:20.440 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:43:20.440 CONFIG | Smart agent (1) has 5 tasks!
+11:43:20.440 CONFIG | Smart agent (1) current reward : 5522
+11:43:20.440 CONFIG | -- AskPrice --
+11:43:38.317 CONFIG | Costs found = 15232.0
+11:43:38.317 CONFIG | Smart agent (1) has found a route with cost 15232.0
+11:43:50.134 CONFIG | Costs found = 27578.5
+11:43:50.134 CONFIG | Smart agent (1) bids 450081
+11:43:50.134 CONFIG | Planing Time = 29694ms
+11:43:50.134 CONFIG | Naive agent wins!
+11:43:50.134 CONFIG | Naive agent (0) bids 2930
+11:43:50.134 CONFIG | -- auction results --
+11:43:50.134 CONFIG | Smart agent (1) loses!
+11:43:50.134 CONFIG | Current cost of Smart agent (1) is 14052.0
+11:43:50.134 CONFIG | Smart agent (1) has 5 tasks!
+11:43:50.134 CONFIG | Smart agent (1) current reward : 5522
+11:43:50.134 CONFIG | -- AskPrice --
+11:44:08.011 CONFIG | Costs found = 15965.0
+11:44:08.011 CONFIG | Smart agent (1) has found a route with cost 15965.0
+11:44:19.828 CONFIG | Costs found = 27577.0
+11:44:19.828 CONFIG | Smart agent (1) bids 311
+11:44:19.828 CONFIG | Planing Time = 29694ms
+11:44:19.828 CONFIG | Naive agent (0) bids 4949
+11:44:19.828 CONFIG | -- auction results --
+11:44:19.828 CONFIG | Smart agent (1) wins!
+11:44:19.828 CONFIG | New cost of Smart agent (1) is 15965.0
+11:44:19.828 CONFIG | Smart agent (1) has 6 tasks!
+11:44:19.828 CONFIG | Smart agent (1) current reward : 5833
+11:44:19.828 CONFIG | -- AskPrice --
+11:44:37.705 CONFIG | Costs found = 20743.0
+11:44:37.705 CONFIG | Smart agent (1) has found a route with cost 20743.0
+11:44:49.522 CONFIG | Costs found = 28127.0
+11:44:49.522 CONFIG | Smart agent (1) bids 232919
+11:44:49.522 CONFIG | Planing Time = 29694ms
+11:44:49.522 CONFIG | Naive agent wins!
+11:44:49.522 CONFIG | Naive agent (0) bids 5165
+11:44:49.522 CONFIG | -- auction results --
+11:44:49.522 CONFIG | Smart agent (1) loses!
+11:44:49.522 CONFIG | Current cost of Smart agent (1) is 15965.0
+11:44:49.522 CONFIG | Smart agent (1) has 6 tasks!
+11:44:49.523 CONFIG | Smart agent (1) current reward : 5833
+11:44:49.523 CONFIG | -- AskPrice --
+11:45:07.399 CONFIG | Costs found = 18430.0
+11:45:07.399 CONFIG | Smart agent (1) has found a route with cost 18430.0
+11:45:19.216 CONFIG | Costs found = 31742.0
+11:45:19.216 CONFIG | Smart agent (1) bids 1536731
+11:45:19.216 CONFIG | Planing Time = 29694ms
