@@ -99,13 +99,9 @@ public class TruthfulAgent implements AuctionBehavior {
 		
 		double marginalCost = mNewCost - mCurrentCost;
 		
-<<<<<<< Updated upstream
-		if (marginalCost < 0.0) {
-=======
 		marginalCost *= 1.1;
 		
 		if (marginalCost<0.0){
->>>>>>> Stashed changes
 			marginalCost = MIN_BID;
 		}
 		bid = marginalCost;
@@ -142,16 +138,10 @@ public class TruthfulAgent implements AuctionBehavior {
         
         System.out.println(mSolver.generatePlans());
 
-<<<<<<< Updated upstream
-        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
-        	plans = tempSol.generatePlans();
-        } else {
-=======
 //        if (tempSol != null && mSolver.getCost() > tempSol.getCost()){
 //        	plans = tempSol.generatePlans();
 //        }
 //        else {
->>>>>>> Stashed changes
         	plans = mSolver.generatePlans();
 //        }
         
